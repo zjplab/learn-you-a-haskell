@@ -46,31 +46,31 @@ explain what's going on, probably for debugging purposes. Consider a
 function that takes a number of bandits in a gang and tells us if that's
 a big gang or not. That's a very simple function:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 isBigGang :: Int -> Bool
 isBigGang x = x > 9
-~~~~
+```
 
 Now, what if instead of just giving us a `True` or `False` value, we want it
 to also return a log string that says what it did? Well, we just make
 that string and return it alongside our `Bool`:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 isBigGang :: Int -> (Bool, String)
 isBigGang x = (x > 9, "Compared gang size to 9.")
-~~~~
+```
 
 So now instead of just returning a `Bool`, we return a tuple where the
 first component of the tuple is the actual value and the second
 component is the string that accompanies that value. There's some added
 context to our value now. Let's give this a go:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> isBigGang 3
 (False,"Compared gang size to 9.")
 ghci> isBigGang 30
 (True,"Compared gang size to 9.")
-~~~~
+```
 
 ![when you have to poop, poop, don't
 talk](img/tuco.png)
@@ -102,10 +102,10 @@ value, `applyLog` is going to make sure that the log of the original value
 isn't lost, but is joined together with the log of the value that
 results from the function. Here's the implementation of `applyLog`:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 applyLog :: (a,String) -> (a -> (b,String)) -> (b,String)
 applyLog (x,log) f = let (y,newLog) = f x in (y,log ++ newLog)
-~~~~
+```
 
 When we have a value with a context and we want to feed it to a
 function, we usually try to separate the actual value from the context
@@ -122,23 +122,23 @@ log value wouldn't be included in the result, so we return a pair of
 
 Here's `applyLog` in action:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> (3, "Smallish gang.") `applyLog` isBigGang
 (False,"Smallish gang.Compared gang size to 9")
 ghci> (30, "A freaking platoon.") `applyLog` isBigGang
 (True,"A freaking platoon.Compared gang size to 9")
-~~~~
+```
 
 The results are similar to before, only now the number of people in the
 gang had its accompanying log and it got included in the result log.
 Here are a few more examples of using `applyLog`:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> ("Tobin","Got outlaw name.") `applyLog` (\x -> (length x, "Applied length."))
 (5,"Got outlaw name.Applied length.")
 ghci> ("Bathcat","Got outlaw name.") `applyLog` (\x -> (length x, "Applied length"))
 (7,"Got outlaw name.Applied length")
-~~~~
+```
 
 See how inside the lambda, `x` is just a normal string and not a tuple and
 how `applyLog` takes care of appending the logs.
@@ -152,9 +152,9 @@ reason that the log has to be a `String`? It uses `++` to append the logs,
 so wouldn't this work on any kind of list, not just a list of
 characters? Sure it would. We can go ahead and change its type to this:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 applyLog :: (a,[c]) -> (a -> (b,[c])) -> (b,[c])
-~~~~
+```
 
 Now, the log is a list. The type of values contained in the list has to
 be the same for the original list as well as for the list that the
@@ -168,21 +168,21 @@ and bytestrings are monoids. As such, they are both instances of the
 `Monoid` type class, which means that they implement the `mappend` function.
 And for both lists and bytestrings, `mappend` is for appending. Watch:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> [1,2,3] `mappend` [4,5,6]
 [1,2,3,4,5,6]
 ghci> B.pack [99,104,105] `mappend` B.pack [104,117,97,104,117,97]
 Chunk "chi" (Chunk "huahua" Empty)
-~~~~
+```
 
 Cool! Now our `applyLog` can work for any monoid. We have to change the
 type to reflect this, as well as the implementation, because we have to
 change `++` to `mappend`:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 applyLog :: (Monoid m) => (a,m) -> (a -> (b,m)) -> (b,m)
 applyLog (x,log) f = let (y,newLog) = f x in (y,log `mappend` newLog)
-~~~~
+```
 
 Because the accompanying value can now be any monoid value, we no longer
 have to think of the tuple as a value and a log, but now we can think of
@@ -192,7 +192,7 @@ value. We just use the `Sum` newtype to make sure that the prices get
 added as we operate with the items. Here's a function that adds drink to
 some cowboy food:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 import Data.Monoid
 
 type Food = String
@@ -202,16 +202,16 @@ addDrink :: Food -> (Food,Price)
 addDrink "beans" = ("milk", Sum 25)
 addDrink "jerky" = ("whiskey", Sum 99)
 addDrink _ = ("beer", Sum 30)
-~~~~
+```
 
 We use strings to represent foods and an `Int` in a `Sum` `newtype` wrapper to
 keep track of how many cents something costs. Just a reminder, doing
 `mappend` with `Sum` results in the wrapped values getting added together:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> Sum 3 `mappend` Sum 9
 Sum {getSum = 12}
-~~~~
+```
 
 The `addDrink` function is pretty simple. If we're eating beans, it
 returns `"milk"` along with `Sum 25`, so 25 cents wrapped in `Sum`. If we're
@@ -220,14 +220,14 @@ beer. Just normally applying this function to a food wouldn't be
 terribly interesting right now, but using `applyLog` to feed a food that
 comes with a price itself into this function is interesting:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> ("beans", Sum 10) `applyLog` addDrink
 ("milk",Sum {getSum = 35})
 ghci> ("jerky", Sum 25) `applyLog` addDrink
 ("whiskey",Sum {getSum = 124})
 ghci> ("dogmeat", Sum 5) `applyLog` addDrink
 ("beer",Sum {getSum = 35})
-~~~~
+```
 
 Milk costs `25` cents, but if we eat it with beans that cost `10` cents,
 we'll end up paying `35` cents. Now it's clear how the attached value
@@ -240,10 +240,10 @@ we can feed that result to `addDrink` again, so that it tells us what we
 should drink along with our drink and how much that will cost us. Let's
 give it a shot:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> ("dogmeat", Sum 5) `applyLog` addDrink `applyLog` addDrink
 ("beer",Sum {getSum = 65})
-~~~~
+```
 
 Adding a drink to some dog meat results in a beer and an additional `30`
 cents, so `("beer", Sum 35)`. And if we use `applyLog` to feed that to
@@ -261,9 +261,9 @@ First, let's examine the type itself. To attach a monoid to a value, we
 just need to put them together in a tuple. The `Writer w a` type is just a
 `newtype` wrapper for this. Its definition is very simple:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 newtype Writer w a = Writer { runWriter :: (a, w) }
-~~~~
+```
 
 It's wrapped in a `newtype` so that it can be made an instance of `Monad`
 and that its type is separate from a normal tuple. The `a` type parameter
@@ -272,11 +272,11 @@ the attached monoid value.
 
 Its `Monad` instance is defined like so:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 instance (Monoid w) => Monad (Writer w) where
     return x = Writer (x, mempty)
     (Writer (x,v)) >>= f = let (Writer (y, v')) = f x in Writer (y, v `mappend` v')
-~~~~
+```
 
 ![when you have to poop, poop, don't
 talk](img/angeleyes.png)
@@ -303,14 +303,14 @@ use `>>=` to feed that value to a function, the resulting monoid value
 will be only what the function returns. Let's use `return` on the number `3`
 a bunch of times, only we'll pair it with a different monoid every time:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> runWriter (return 3 :: Writer String Int)
 (3,"")
 ghci> runWriter (return 3 :: Writer (Sum Int) Int)
 (3,Sum {getSum = 0})
 ghci> runWriter (return 3 :: Writer (Product Int) Int)
 (3,Product {getProduct = 1})
-~~~~
+```
 
 Because `Writer` doesn't have a `Show` instance, we had to use `runWriter` to
 convert our `Writer` values to normal tuples that can be shown. For
@@ -331,7 +331,7 @@ the monoid values that come attached get `mappend`ed and so are reflected
 in the final result. Here's a simple example of using `do` notation with
 `Writer` to multiply two numbers:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 import Control.Monad.Writer
 
 logNumber :: Int -> Writer [String] Int
@@ -342,7 +342,7 @@ multWithLog = do
     a <- logNumber 3
     b <- logNumber 5
     return (a*b)
-~~~~
+```
 
 `logNumber` takes a number and makes a `Writer` value out of it. For the
 monoid, we use a list of strings and we equip the number with a
@@ -353,10 +353,10 @@ result. Because `return` just takes something and puts it in a minimal
 context, we can be sure that it won't add anything to the log. Here's
 what we see if we run this:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> runWriter multWithLog
 (15,["Got number: 3","Got number: 5"])
-~~~~
+```
 
 Sometimes we just want some monoid value to be included at some
 particular point. For this, the `tell` function is useful. It's part of
@@ -367,14 +367,14 @@ value attached. When we have a monadic value that has () as its result,
 we don't bind it to a variable. Here's `multWithLog` but with some extra
 reporting included:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 multWithLog :: Writer [String] Int
 multWithLog = do
     a <- logNumber 3
     b <- logNumber 5
     tell ["Gonna multiply these two"]
     return (a*b)
-~~~~
+```
 
 It's important that `return (a*b)` is the last line, because the result
 of the last line in a `do` expression is the result of the whole `do`
@@ -383,10 +383,10 @@ result of this `do` expression. We'd lose the result of the
 multiplication. However, the log would be the same. Here is this in
 action:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> runWriter multWithLog
 (15,["Got number: 3","Got number: 5","Gonna multiply these two"])
-~~~~
+```
 
 ### Adding logging to programs
 
@@ -396,12 +396,12 @@ divides both of them. Haskell already features the `gcd` function, which
 does exactly this, but let's implement our own and then equip it with
 logging capabilities. Here's the normal algorithm:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 gcd' :: Int -> Int -> Int
 gcd' a b
     | b == 0    = a
     | otherwise = gcd' b (a `mod` b)
-~~~~
+```
 
 The algorithm is very simple. First, it checks if the second number is
 0. If it is, then the result is the first number. If it isn't, then the
@@ -416,24 +416,24 @@ so we run the algorithm again for 1 and 0, as dividing 2 by 1 gives us a
 remainder of 0. And finally, because the second number is now 0, the
 final result is 1. Let's see if our code agrees:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> gcd' 8 3
 1
-~~~~
+```
 
 It does. Very good! Now, we want to equip our result with a context, and
 the context will be a monoid value that acts as a log. Like before,
 we'll use a list of strings as our monoid. So the type of our new `gcd'`
 function should be:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 gcd' :: Int -> Int -> Writer [String] Int
-~~~~
+```
 
 All that's left now is to equip our function with log values. Here's the
 code:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 import Control.Monad.Writer
 
 gcd' :: Int -> Int -> Writer [String] Int
@@ -444,7 +444,7 @@ gcd' a b
     | otherwise = do
         tell [show a ++ " mod " ++ show b ++ " = " ++ show (a `mod` b)]
         gcd' b (a `mod` b)
-~~~~
+```
 
 This function takes two normal `Int` values and returns a `Writer [String] Int`,
 that is, an `Int` that has a log context. In the case where `b` is `0`,
@@ -454,9 +454,9 @@ we're finished and then we use `return` to present `a` as the result of the
 `do` expression. Instead of this `do` expression, we could have also written
 this:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 Writer (a, ["Finished with " ++ show a])
-~~~~
+```
 
 However, I think the `do` expression is easier to read. Next, we have the
 case when `b` isn't `0`. In this case, we log that we're using `mod` to figure
@@ -474,21 +474,21 @@ Let's try our new `gcd'` out. Its result is a `Writer [String] Int` value
 and if we unwrap that from its `newtype`, we get a tuple. The first part
 of the tuple is the result. Let's see if it's okay:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> fst $ runWriter (gcd' 8 3)
 1
-~~~~
+```
 
 Good! Now what about the log? Because the log is a list of strings,
 let's use `mapM_ putStrLn` to print those strings to the screen:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> mapM_ putStrLn $ snd $ runWriter (gcd' 8 3)
 8 mod 3 = 2
 3 mod 2 = 1
 2 mod 1 = 0
 Finished with 1
-~~~~
+```
 
 I think it's awesome how we were able to change our ordinary algorithm
 to one that reports what it does as it goes along just by changing
@@ -508,9 +508,9 @@ end of a list is slow if that list is really long.
 In our `gcd'` function, the logging is fast because the list appending
 ends up looking like this:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 a ++ (b ++ (c ++ (d ++ (e ++ f))))
-~~~~
+```
 
 Lists are a data structure that's constructed from left to right, and
 this is efficient because we first fully construct the left part of a
@@ -518,9 +518,9 @@ list and only then add a longer list on the right. But if we're not
 careful, using the `Writer` monad can produce list appending that looks
 like this:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ((((a ++ b) ++ c) ++ d) ++ e) ++ f
-~~~~
+```
 
 This associates to the left instead of to the right. This is inefficient
 because every time it wants to add the right part to the left part, it
@@ -530,7 +530,7 @@ The following function works like `gcd'`, only it logs stuff in reverse.
 First it produces the log for the rest of the procedure and then adds
 the current step to the end of the log.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 import Control.Monad.Writer
 
 gcdReverse :: Int -> Int -> Writer [String] Int
@@ -542,20 +542,20 @@ gcdReverse a b
         result <- gcdReverse b (a `mod` b)
         tell [show a ++ " mod " ++ show b ++ " = " ++ show (a `mod` b)]
         return result
-~~~~
+```
 
 It does the recursion first, and binds its `result` value to result. Then
 it adds the current step to the log, but the current step goes at the
 end of the log that was produced by the recursion. Finally, it presents
 the result of the recursion as the final result. Here it is in action:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> mapM_ putStrLn $ snd $ runWriter (gcdReverse 8 3)
 Finished with 1
 2 mod 1 = 0
 3 mod 2 = 1
 8 mod 3 = 2
-~~~~
+```
 
 It's inefficient because it ends up associating the use of `++` to the
 left instead of to the right.
@@ -580,18 +580,18 @@ other one there. But what if we take the difference list approach and
 represent our lists as functions? Well then, appending two difference
 lists can be done like so:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 f `append` g = \xs -> f (g xs)
-~~~~
+```
 
 Remember, `f` and `g` are functions that take lists and prepend something to
 them. So, for instance, if `f` is the function `("dog"++)` (just another way
 of writing `\xs -> "dog" ++ xs`) and `g` the function `("meat"++)`, then
 ``f `append` g`` makes a new function that's equivalent to the following:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 \xs -> "dog" ++ ("meat" ++ xs)
-~~~~
+```
 
 We've appended two difference lists just by making a new function that
 first applies one difference list some list and then the other.
@@ -599,21 +599,21 @@ first applies one difference list some list and then the other.
 Let's make a `newtype` wrapper for difference lists so that we can easily
 give them monoid instances:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 newtype DiffList a = DiffList { getDiffList :: [a] -> [a] }
-~~~~
+```
 
 The type that we wrap is `[a] -> [a]` because a difference list is just a
 function that takes a list and returns another. Converting normal lists
 to difference lists and vice versa is easy:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 toDiffList :: [a] -> DiffList a
 toDiffList xs = DiffList (xs++)
 
 fromDiffList :: DiffList a -> [a]
 fromDiffList (DiffList f) = f []
-~~~~
+```
 
 To make a normal list into a difference list we just do what we did
 before and make it a function that prepends it to another list. Because
@@ -622,24 +622,24 @@ if we just want that something, we apply the function to an empty list!
 
 Here's the `Monoid` instance:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 instance Monoid (DiffList a) where
     mempty = DiffList (\xs -> [] ++ xs)
     (DiffList f) `mappend` (DiffList g) = DiffList (\xs -> f (g xs))
-~~~~
+```
 
 Notice how for lists, `mempty` is just the `id` function and `mappend` is
 actually just function composition. Let's see if this works:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> fromDiffList (toDiffList [1,2,3,4] `mappend` toDiffList [1,2,3])
 [1,2,3,4,1,2,3]
-~~~~
+```
 
 Tip top! Now we can increase the efficiency of our `gcdReverse` function
 by making it use difference lists instead of normal lists:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 import Control.Monad.Writer
 
 gcd' :: Int -> Int -> Writer (DiffList String) Int
@@ -651,20 +651,20 @@ gcd' a b
         result <- gcd' b (a `mod` b)
         tell (toDiffList [show a ++ " mod " ++ show b ++ " = " ++ show (a `mod` b)])
         return result
-~~~~
+```
 
 We only had to change the type of the monoid from `[String]` to
 `DiffList String` and then when using `tell`, convert our normal lists into
 difference lists with `toDiffList`. Let's see if the log gets assembled
 properly:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> mapM_ putStrLn . fromDiffList . snd . runWriter $ gcdReverse 110 34
 Finished with 2
 8 mod 2 = 0
 34 mod 8 = 2
 110 mod 34 = 8
-~~~~
+```
 
 We do `gcdReverse 110 34`, then use `runWriter` to unwrap it from the
 `newtype`, then apply `snd` to that to just get the log, then apply
@@ -678,14 +678,14 @@ performance, consider this function that just counts down from some
 number to zero, but produces its log in reverse, like `gcdReverse`, so
 that the numbers in the log will actually be counted up:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 finalCountDown :: Int -> Writer (DiffList String) ()
 finalCountDown 0 = do
     tell (toDiffList ["0"])
 finalCountDown x = do
     finalCountDown (x-1)
     tell (toDiffList [show x])
-~~~~
+```
 
 If we give it `0`, it just logs it. For any other number, it first counts
 down its predecessor to `0` and then appends that number to the log. So if
@@ -695,31 +695,31 @@ log.
 Anyway, if you load this function in GHCi and apply it to a big number,
 like `500000`, you'll see that it quickly starts counting from `0` onwards:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> mapM_ putStrLn . fromDiffList . snd . runWriter $ finalCountDown 500000
 0
 1
 2
 ...
-~~~~
+```
 
 However, if we change it to use normal lists instead of difference
 lists, like so:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 finalCountDown :: Int -> Writer [String] ()
 finalCountDown 0 = do
     tell ["0"]
 finalCountDown x = do
     finalCountDown (x-1)
     tell [show x]
-~~~~
+```
 
 And then tell GHCi to start counting:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> mapM_ putStrLn . snd . runWriter $ finalCountDown 500000
-~~~~
+```
 
 We'll see that the counting is really slow.
 
@@ -744,22 +744,22 @@ applies `g` to it and then applies `f` to that result. So basically, we're
 making a new function that's like `g`, only before returning its result, `f`
 gets applied to that result as well. For instance:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> let f = (*5)
 ghci> let g = (+3)
 ghci> (fmap f g) 8
 55
-~~~~
+```
 
 We've also seen that functions are applicative functors. They allow us
 to operate on the eventual results of functions as if we already had
 their results. Here's an example:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> let f = (+) <$> (*2) <*> (+10)
 ghci> f 3
 19
-~~~~
+```
 
 The expression `(+) <$> (*2) <*> (+10)` makes a function that takes
 a number, gives that number to `(*2)` and `(+10)` and then adds together
@@ -779,11 +779,11 @@ applicative functors, let's dive right in and see what their `Monad`
 instance looks like. It's located in `Control.Monad.Instances` and it goes
 a little something like this:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 instance Monad ((->) r) where
     return x = \_ -> x
     h >>= f = \w -> f (h w) w
-~~~~
+```
 
 We've already seen how `pure` is implemented for functions, and `return` is
 pretty much the same thing as `pure`. It takes a value and puts it in a
@@ -807,7 +807,7 @@ If don't get how `>>=` works at this point, don't worry, because with
 examples we'll see how this is a really simple monad. Here's a `do`
 expression that utilizes this monad:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 import Control.Monad.Instances
 
 addStuff :: Int -> Int
@@ -815,7 +815,7 @@ addStuff = do
     a <- (*2)
     b <- (+10)
     return (a+b)
-~~~~
+```
 
 This is the same thing as the applicative expression that we wrote
 earlier, only now it relies on functions being monads. A `do` expression
@@ -828,10 +828,10 @@ other effect but to make a monadic value that presents some result. This
 presents `a+b` as the result of this function. If we test it out, we get
 the same result as before:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> addStuff 3
 19
-~~~~
+```
 
 Both `(*2)` and `(+10)` get applied to the number `3` in this case.
 `return (a+b)` does as well, but it ignores it and always presents `a+b` as the
@@ -839,13 +839,13 @@ result. For this reason, the function monad is also called the reader
 monad. All the functions read from a common source. To illustrate this
 even better, we can rewrite `addStuff` like so:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 addStuff :: Int -> Int
 addStuff x = let
     a = (*2) x
     b = (+10) x
     in a+b
-~~~~
+```
 
 We see that the reader monad allows us to treat functions as values with
 a context. We can act as if we already know what the functions will
@@ -882,14 +882,14 @@ generator that a previous function returned along with its result. When
 making a function that takes a `StdGen` and tosses a coin three times
 based on that generator, we had to do this:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 threeCoins :: StdGen -> (Bool, Bool, Bool)
 threeCoins gen =
     let (firstCoin, newGen) = random gen
         (secondCoin, newGen') = random newGen
         (thirdCoin, newGen'') = random newGen'
     in  (firstCoin, secondCoin, thirdCoin)
-~~~~
+```
 
 It took a generator `gen` and then `random gen` returned a `Bool` value along
 with a new generator. To throw the second coin, we used the new
@@ -910,9 +910,9 @@ let's go ahead and give them a type. We'll say that a stateful
 computation is a function that takes some state and returns a value
 along with some new state. That function would have the following type:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 s -> (a,s)
-~~~~
+```
 
 `s` is the type of the state and `a` the result of the stateful
 computations.
@@ -950,7 +950,7 @@ that item as the result and also return a new stack, without that item.
 stack. It will return `()` as its result, along with a new stack. Here
 goes:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 type Stack = [Int]
 
 pop :: Stack -> (Int,Stack)
@@ -958,7 +958,7 @@ pop (x:xs) = (x,xs)
 
 push :: Int -> Stack -> ((),Stack)
 push a xs = ((),a:xs)
-~~~~
+```
 
 We used `()` as the result when pushing to the stack because pushing an
 item onto the stack doesn't have any important result value, its main
@@ -970,13 +970,13 @@ Let's write a small piece of code to simulate a stack using these
 functions. We'll take a stack, push 3 to it and then pop two items, just
 for kicks. Here it is:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 stackManip :: Stack -> (Int, Stack)
 stackManip stack = let
     ((),newStack1) = push 3 stack
     (a ,newStack2) = pop newStack1
     in pop newStack2
-~~~~
+```
 
 We take a `stack` and then we do `push 3 stack`, which results in a tuple.
 The first part of the tuple is a `()` and the second is a new stack and we
@@ -986,10 +986,10 @@ call `newStack2`. Then, we pop a number off `newStack2` and we get a number
 that's `b` and a `newStack3`. We return a tuple with that number and that
 stack. Let's try it out:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> stackManip [5,8,2,1]
 (5,[8,2,1])
-~~~~
+```
 
 Cool, the result is `5` and the new stack is `[8,2,1]`. Notice how
 `stackManip` is itself a stateful computation. We've taken a bunch of
@@ -1001,12 +1001,12 @@ giving the state to every stateful computation and storing it and then
 giving it to the next one. Wouldn't it be cooler if, instead of giving
 the stack manually to each function, we could write something like this:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 stackManip = do
     push 3
     a <- pop
     pop
-~~~~
+```
 
 Well, using the state monad will allow us to do exactly this. With it,
 we will be able to take stateful computations like these and use them
@@ -1017,9 +1017,9 @@ without having to manage the state manually.
 The `Control.Monad.State` module provides a `newtype` that wraps stateful
 computations. Here's its definition:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 newtype State s a = State { runState :: s -> (a,s) }
-~~~~
+```
 
 A `State s a` is a stateful computation that manipulates a state of type `s`
 and has a result of type `a`.
@@ -1028,13 +1028,13 @@ Now that we've seen what stateful computations are about and how they
 can even be thought of as values with contexts, let's check out their
 `Monad` instance:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 instance Monad (State s) where
     return x = State $ \s -> (x,s)
     (State h) >>= f = State $ \s -> let (a, newState) = h s
                                         (State g) = f a
                                     in  g newState
-~~~~
+```
 
 Let's take a gander at `return` first. Our aim with `return` is to take a
 value and make a stateful computation that always has that value as its
@@ -1069,7 +1069,7 @@ the second one is hidden inside a function that takes the previous one's
 result. Because `pop` and `push` are already stateful computations, it's
 easy to wrap them into a `State` wrapper. Watch:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 import Control.Monad.State
 
 pop :: State Stack Int
@@ -1077,13 +1077,13 @@ pop = State $ \(x:xs) -> (x,xs)
 
 push :: Int -> State Stack ()
 push a = State $ \xs -> ((),a:xs)
-~~~~
+```
 
 `pop` is already a stateful computation and `push` takes an `Int` and returns
 a stateful computation. Now we can rewrite our previous example of
 pushing `3` onto the stack and then popping two numbers off like this:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 import Control.Monad.State
 
 stackManip :: State Stack Int
@@ -1091,34 +1091,34 @@ stackManip = do
     push 3
     a <- pop
     pop
-~~~~
+```
 
 See how we've glued a push and two pops into one stateful computation?
 When we unwrap it from its `newtype` wrapper we get a function to which we
 can provide some initial state:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> runState stackManip [5,8,2,1]
 (5,[8,2,1])
-~~~~
+```
 
 We didn't have to bind the second `pop` to `a` because we didn't use that `a`
 at all. So we could have written it like this:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 stackManip :: State Stack Int
 stackManip = do
     push 3
     pop
     pop
-~~~~
+```
 
 Pretty cool. But what if we want to do this: pop one number off the
 stack and then if that number is `5` we just put it back onto the stack
 and stop but if it isn't `5`, we push `3` and `8` back on? Well, here's the
 code:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 stackStuff :: State Stack ()
 stackStuff = do
     a <- pop
@@ -1127,28 +1127,28 @@ stackStuff = do
         else do
             push 3
             push 8
-~~~~
+```
 
 This is quite straightforward. Let's run it with an initial stack.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> runState stackStuff [9,0,2,1,0]
 ((),[8,3,0,2,1,0])
-~~~~
+```
 
 Remember, `do` expressions result in monadic values and with the `State`
 monad, a single `do` expression is also a stateful function. Because
 `stackManip` and `stackStuff` are ordinary stateful computations, we can
 glue them together to produce further stateful computations.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 moreStack :: State Stack ()
 moreStack = do
     a <- stackManip
     if a == 100
         then stackStuff
         else return ()
-~~~~
+```
 
 If the result of `stackManip` on the current stack is `100`, we run
 `stackStuff`, otherwise we do nothing. `return ()` just keeps the state as
@@ -1158,36 +1158,36 @@ The `Control.Monad.State` module provides a type class that's called
 `MonadState` and it features two pretty useful functions, namely `get` and
 `put`. For `State`, the `get` function is implemented like this:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 get = State $ \s -> (s,s)
-~~~~
+```
 
 So it just takes the current state and presents it as the result. The
 `put` function takes some state and makes a stateful function that
 replaces the current state with it:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 put newState = State $ \s -> ((),newState)
-~~~~
+```
 
 So with these, we can see what the current stack is or we can replace it
 with a whole other stack. Like so:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 stackyStack :: State Stack ()
 stackyStack = do
     stackNow <- get
     if stackNow == [1,2,3]
         then put [8,3,1]
         else put [9,2,1]
-~~~~
+```
 
 It's worth examining what the type of `>>=` would be if it only worked
 for `State` values:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 (>>=) :: State s a -> (a -> State s b) -> State s b
-~~~~
+```
 
 See how the type of the state `s` stays the same but the type of the
 result can change from `a` to `b`? This means that we can glue together
@@ -1195,9 +1195,9 @@ several stateful computations whose results are of different types but
 the type of the state has to stay the same. Now why is that? Well, for
 instance, for `Maybe`, `>>=` has this type:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 (>>=) :: Maybe a -> (a -> Maybe b) -> Maybe b
-~~~~
+```
 
 It makes sense that the monad itself, `Maybe`, doesn't change. It wouldn't
 make sense to use `>>=` between two different monads. Well, for the
@@ -1214,27 +1214,27 @@ number. The state monad makes dealing with this a lot easier.
 
 The `random` function from `System.Random` has the following type:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 random :: (RandomGen g, Random a) => g -> (a, g)
-~~~~
+```
 
 Meaning it takes a random generator and produces a random number along
 with a new generator. We can see that it's a stateful computation, so we
 can wrap it in the `State` `newtype` constructor and then use it as a
 monadic value so that passing of the state gets handled for us:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 import System.Random
 import Control.Monad.State
 
 randomSt :: (RandomGen g, Random a) => State g a
 randomSt = State random
-~~~~
+```
 
 So now if we want to throw three coins (`True` is tails, `False` is heads)
 we just do the following:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 import System.Random
 import Control.Monad.State
 
@@ -1244,7 +1244,7 @@ threeCoins = do
     b <- randomSt
     c <- randomSt
     return (a,b,c)
-~~~~
+```
 
 `threeCoins` is now a stateful computations and after taking an initial
 random generator, it passes it to the first `randomSt`, which produces a
@@ -1252,10 +1252,10 @@ number and a new generator, which gets passed to the next one and so on.
 We use `return (a,b,c)` to present `(a,b,c)` as the result without changing
 the most recent generator. Let's give this a go:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> runState threeCoins (mkStdGen 33)
 ((True,False,True),680029187 2103410263)
-~~~~
+```
 
 Nice. Doing these sort of things that require some state to be kept in
 between steps just became much less of a hassle!
@@ -1276,12 +1276,12 @@ or provide some other useful info regarding the failure. An `Either e a`
 value can either be a `Right` value, signifying the right answer and a
 success, or it can be a `Left` value, signifying failure. For instance:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> :t Right 4
 Right 4 :: (Num t) => Either a t
 ghci> :t Left "out of cheese error"
 Left "out of cheese error" :: Either [Char] b
-~~~~
+```
 
 This is pretty much just an enhanced `Maybe`, so it makes sense for it to
 be a monad, because it can also be viewed as a value with an added
@@ -1291,13 +1291,13 @@ there's an error as well.
 Its `Monad` instance is similar to that of `Maybe` and it can be found in
 `Control.Monad.Error`:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 instance (Error e) => Monad (Either e) where
     return x = Right x
     Right x >>= f = f x
     Left err >>= f = Left err
     fail msg = Left (strMsg msg)
-~~~~
+```
 
 `return`, as always, takes a value and puts it in a default minimal
 context. It wraps our value in the `Right` constructor because we're using
@@ -1319,12 +1319,12 @@ form of a string and returns such a value. A good example of an `Error`
 instance is, well, the `String` type! In the case of `String`, the `strMsg`
 function just returns the string that it got:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> :t strMsg
 strMsg :: (Error a) => String -> a
 ghci> strMsg "boom!" :: String
 "boom!"
-~~~~
+```
 
 But since we usually use `String` to describe the error when using `Either`,
 we don't have to worry about this too much. When a pattern match fails
@@ -1332,12 +1332,12 @@ in `do` notation, a `Left` value is used to signify this failure.
 
 Anyway, here are a few examples of usage:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> Left "boom" >>= \x -> return (x+1)
 Left "boom"
 ghci> Right 100 >>= \x -> Left "no way!"
 Left "no way!"
-~~~~
+```
 
 When we use `>>=` to feed a `Left` value to a function, the function is
 ignored and an identical `Left` value is returned. When we feed a `Right`
@@ -1347,7 +1347,7 @@ but in this case that function produced a `Left` value anyway!
 When we try to feed a `Right` value to a function that also succeeds,
 we're tripped up by a peculiar type error! Hmmm.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> Right 3 >>= \x -> return (x + 100)
 
 <interactive>:1:0:
@@ -1355,7 +1355,7 @@ ghci> Right 3 >>= \x -> return (x + 100)
       `Error a' arising from a use of `it' at <interactive>:1:0-33
       `Show a' arising from a use of `print' at <interactive>:1:0-33
     Probable fix: add a type signature that fixes these type variable(s)
-~~~~
+```
 
 Haskell says that it doesn't know which type to choose for the `e` part of
 our `Either e a` typed value, even though we're just printing the `Right`
@@ -1363,10 +1363,10 @@ part. This is due to the `Error e` constraint on the `Monad` instance. So if
 you get type errors like this one when using `Either` as a monad, just add
 an explicit type signature:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> Right 3 >>= \x -> return (x + 100) :: Either String Int
 Right 103
-~~~~
+```
 
 Alright, now it works!
 
@@ -1413,15 +1413,15 @@ having a `Functor` instance because of the `liftM` function. `liftM` takes a
 function and a monadic value and maps it over the monadic value. So it's
 pretty much the same thing as `fmap`! This is `liftM`'s type:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 liftM :: (Monad m) => (a -> b) -> m a -> m b
-~~~~
+```
 
 And this is the type of `fmap`:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 fmap :: (Functor f) => (a -> b) -> f a -> f b
-~~~~
+```
 
 If the `Functor` and `Monad` instances for a type obey the functor and monad
 laws, these two amount to the same thing (and all the monads that we've
@@ -1429,7 +1429,7 @@ met so far obey both). This is kind of like `pure` and `return` do the same
 thing, only one has an `Applicative` class constraint whereas the other
 has a `Monad` one. Let's try `liftM` out:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> liftM (*3) (Just 8)
 Just 24
 ghci> fmap (*3) (Just 8)
@@ -1442,7 +1442,7 @@ ghci> runState (liftM (+100) pop) [1,2,3,4]
 (101,[2,3,4])
 ghci> runState (fmap (+100) pop) [1,2,3,4]
 (101,[2,3,4])
-~~~~
+```
 
 We already know quite well how `fmap` works with `Maybe` values. And `liftM`
 does the same thing. For `Writer` values, the function is mapped over the
@@ -1454,19 +1454,19 @@ returned `(1,[2,3,4])`.
 
 This is how `liftM` is implemented:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 liftM :: (Monad m) => (a -> b) -> m a -> m b
 liftM f m = m >>= (\x -> return (f x))
-~~~~
+```
 
 Or with `do` notation:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 liftM :: (Monad m) => (a -> b) -> m a -> m b
 liftM f m = do
     x <- m
     return (f x)
-~~~~
+```
 
 We feed the monadic value `m` into the function and then we apply the
 function `f` to its result before putting it back into a default context.
@@ -1480,20 +1480,20 @@ can conclude that monads are stronger than just regular old functors.
 The `Applicative` type class allows us to apply functions between values
 with contexts as if they were normal values. Like this:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> (+) <$> Just 3 <*> Just 5
 Just 8
 ghci> (+) <$> Just 3 <*> Nothing
 Nothing
-~~~~
+```
 
 Using this applicative style makes things pretty easy. `<$>` is just
 `fmap` and `<*>` is a function from the `Applicative` type class that has
 the following type:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 (<*>) :: (Applicative f) => f (a -> b) -> f a -> f b
-~~~~
+```
 
 So it's kind of like `fmap`, only the function itself is in a context. We
 have to somehow extract it from the context and map it over the `f a`
@@ -1507,13 +1507,13 @@ by using only what the `Monad` type class give us. The `ap` function is
 basically `<*>`, only it has a `Monad` constraint instead of an
 `Applicative` one. Here's its definition:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ap :: (Monad m) => m (a -> b) -> m a -> m b
 ap mf m = do
     f <- mf
     x <- m
     return (f x)
-~~~~
+```
 
 `mf` is a monadic value whose result is a function. Because the function
 is in a context as well as the value, we get the function from the
@@ -1521,7 +1521,7 @@ context and call it `f`, then get the value and call that `x` and then
 finally apply the function to the value and present that as a result.
 Here's a quick demonstration:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> Just (+3) <*> Just 4
 Just 7
 ghci> Just (+3) `ap` Just 4
@@ -1530,7 +1530,7 @@ ghci> [(+1),(+2),(+3)] <*> [10,11]
 [11,12,12,13,13,14]
 ghci> [(+1),(+2),(+3)] `ap` [10,11]
 [11,12,12,13,13,14]
-~~~~
+```
 
 Now we see that monads are stronger than applicatives as well, because
 we can use the functions from `Monad` to implement the ones for
@@ -1543,10 +1543,10 @@ if you already have a `Monad` instance for something, you can give it a
 The `liftA2` function is a convenience function for applying a function
 between two applicative values. It's defined simply like so:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 liftA2 :: (Applicative f) => (a -> b -> c) -> f a -> f b -> f c
 liftA2 f x y = f <$> x <*> y
-~~~~
+```
 
 The `liftM2` function does the same thing, only it has a `Monad` constraint.
 There also exist `liftM3` and `liftM4` and `liftM5`.
@@ -1567,22 +1567,22 @@ that any nested monadic value can be flattened and that this is actually
 a property unique to monads. For this, the `join` function exists. Its
 type is this:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 join :: (Monad m) => m (m a) -> m a
-~~~~
+```
 
 So it takes a monadic value within a monadic value and gives us just a
 monadic value, so it sort of flattens it. Here it is with some `Maybe`
 values:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> join (Just (Just 9))
 Just 9
 ghci> join (Just Nothing)
 Nothing
 ghci> join Nothing
 Nothing
-~~~~
+```
 
 The first line has a successful computation as a result of a successful
 computation, so they're both just joined into one big successful
@@ -1596,19 +1596,19 @@ the onset a failure, so the result is a failure as well.
 
 Flattening lists is pretty intuitive:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> join [[1,2,3],[4,5,6]]
 [1,2,3,4,5,6]
-~~~~
+```
 
 As you can see, for lists, `join` is just `concat`. To flatten a `Writer`
 value whose result is a `Writer` value itself, we have to `mappend` the
 monoid value.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> runWriter $ join (Writer (Writer (1,"aaa"),"bbb"))
 (1,"bbbaaa")
-~~~~
+```
 
 The outer monoid value `"bbb"` comes first and then to it `"aaa"` is
 appended. Intuitively speaking, when you want to examine what the result
@@ -1617,23 +1617,23 @@ first and only then can you examine what it has inside.
 
 Flattening `Either` values is very similar to flattening `Maybe` values:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> join (Right (Right 9)) :: Either String Int
 Right 9
 ghci> join (Right (Left "error")) :: Either String Int
 Left "error"
 ghci> join (Left "error") :: Either String Int
 Left "error"
-~~~~
+```
 
 If we apply `join` to a stateful computation whose result is a stateful
 computation, the result is a stateful computation that first runs the
 outer stateful computation and then the resulting one. Watch:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> runState (join (State $ \s -> (push 10,1:2:s))) [0,0,0]
 ((),[10,1,2,0,0,0])
-~~~~
+```
 
 The lambda here takes a state and puts `2` and `1` onto the stack and
 presents `push 10` as its result. So when this whole thing is flattened
@@ -1642,12 +1642,12 @@ with `join` and then run, it first puts `2` and `1` onto the stack and then
 
 The implementation for `join` is as follows:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 join :: (Monad m) => m (m a) -> m a
 join mm = do
     m <- mm
     m
-~~~~
+```
 
 Because the result of `mm` is a monadic value, we get that result and then
 just put it on a line of its own because it's a monadic value. The trick
@@ -1657,12 +1657,12 @@ in `Just` values only if the outer and inner values are both `Just` values.
 Here's what this would look like if the `mm` value was set in advance to
 `Just (Just 8)`:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 joinedMaybes :: Maybe Int
 joinedMaybes = do
     m <- Just (Just 8)
     m
-~~~~
+```
 
 ![im a cop too as well also](img/tipi.png)
 
@@ -1690,9 +1690,9 @@ being the butter). It takes a predicate and a list to filter out and
 then returns a new list where only the elements that satisfy the
 predicate are kept. Its type is this:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 filter :: (a -> Bool) -> [a] -> [a]
-~~~~
+```
 
 The predicate takes an element of the list and returns a `Bool` value.
 Now, what if the `Bool` value that it returned was actually a monadic
@@ -1709,9 +1709,9 @@ the context that each `Bool` came with would be lost.
 The `filterM` function from `Control.Monad` does just what we want! Its type
 is this:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 filterM :: (Monad m) => (a -> m Bool) -> [a] -> m [a]
-~~~~
+```
 
 The predicate returns a monadic value whose result is a `Bool`, but
 because it's a monadic value, its context can be anything from a
@@ -1721,16 +1721,16 @@ is reflected in the final result, the result is also a monadic value.
 Let's take a list and only keep those values that are smaller than 4. To
 start, we'll just use the regular `filter` function:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> filter (\x -> x < 4) [9,1,5,2,10,3]
 [1,2,3]
-~~~~
+```
 
 That's pretty easy. Now, let's make a predicate that, aside from
 presenting a `True` or `False` result, also provides a log of what it did.
 Of course, we'll be using the `Writer` monad for this:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 keepSmall :: Int -> Writer [String] Bool
 keepSmall x
     | x < 4 = do
@@ -1739,7 +1739,7 @@ keepSmall x
     | otherwise = do
         tell [show x ++ " is too large, throwing it away"]
         return False
-~~~~
+```
 
 Instead of just returning a `Bool`, this function returns a
 `Writer [String] Bool`. It's a monadic predicate. Sounds fancy, doesn't it? If
@@ -1749,15 +1749,15 @@ the number is smaller than `4` we report that we're keeping it and then
 Now, let's give it to `filterM` along with a list. Because the predicate
 returns a `Writer` value, the resulting list will also be a `Writer` value.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> fst $ runWriter $ filterM keepSmall [9,1,5,2,10,3]
 [1,2,3]
-~~~~
+```
 
 Examining the result of the resulting `Writer` value, we see that
 everything is in order. Now, let's print the log and see what we got:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> mapM_ putStrLn $ snd $ runWriter $ filterM keepSmall [9,1,5,2,10,3]
 9 is too large, throwing it away
 Keeping 1
@@ -1765,7 +1765,7 @@ Keeping 1
 Keeping 2
 10 is too large, throwing it away
 Keeping 3
-~~~~
+```
 
 Awesome. So just by providing a monadic predicate to `filterM`, we were
 able to filter a list while taking advantage of the monadic context that
@@ -1776,7 +1776,7 @@ A very cool Haskell trick is using `filterM` to get the powerset of a list
 of all subsets of that set. So if we have a set like `[1,2,3]`, its
 powerset would include the following sets:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 [1,2,3]
 [1,2]
 [1,3]
@@ -1785,7 +1785,7 @@ powerset would include the following sets:
 [2]
 [3]
 []
-~~~~
+```
 
 In other words, getting a powerset is like getting all the combinations
 of keeping and throwing out elements from a set. `[2,3]` is like the
@@ -1798,20 +1798,20 @@ drop it? Well, we'd like to do both actually. So we are going to filter
 a list and we'll use a predicate that non-deterministically both keeps
 and drops every element from the list. Here's our `powerset` function:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 powerset :: [a] -> [[a]]
 powerset xs = filterM (\x -> [True, False]) xs
-~~~~
+```
 
 Wait, that's it? Yup. We choose to drop and keep every element,
 regardless of what that element is. We have a non-deterministic
 predicate, so the resulting list will also be a non-deterministic value
 and will thus be a list of lists. Let's give this a go:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> powerset [1,2,3]
 [[1,2,3],[1,2],[1,3],[1],[2,3],[2],[3],[]]
-~~~~
+```
 
 This takes a bit of thinking to wrap your head around, but if you just
 consider lists as non-deterministic values that don't know what to be so
@@ -1827,24 +1827,24 @@ does the same thing, except it takes a binary function that produces a
 monadic value and folds the list up with that. Unsurprisingly, the
 resulting value is also monadic. The type of `foldl` is this:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 foldl :: (a -> b -> a) -> a -> [b] -> a
-~~~~
+```
 
 Whereas `foldM` has the following type:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 foldM :: (Monad m) => (a -> b -> m a) -> a -> [b] -> m a
-~~~~
+```
 
 The value that the binary function returns is monadic and so the result
 of the whole fold is monadic as well. Let's sum a list of numbers with a
 fold:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> foldl (\acc x -> acc + x) 0 [2,8,3,1]
 14
-~~~~
+```
 
 The starting accumulator is `0` and then `2` gets added to the accumulator,
 resulting in a new accumulator that has a value of `2`. `8` gets added to
@@ -1859,22 +1859,22 @@ isn't, continues on its merry way. Because of this added possibility of
 failure, let's make our binary function return a `Maybe` accumulator
 instead of a normal one. Here's the binary function:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 binSmalls :: Int -> Int -> Maybe Int
 binSmalls acc x
     | x > 9     = Nothing
     | otherwise = Just (acc + x)
-~~~~
+```
 
 Because our binary function is now a monadic function, we can't use it
 with the normal `foldl`, but we have to use `foldM`. Here goes:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> foldM binSmalls 0 [2,8,3,1]
 Just 14
 ghci> foldM binSmalls 0 [2,11,3,1]
 Nothing
-~~~~
+```
 
 Excellent! Because one number in the list was greater than `9`, the whole
 thing resulted in a `Nothing`. Folding with a binary function that returns
@@ -1902,25 +1902,25 @@ divide them and such.
 
 This was the main body of our function:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 import Data.List
 
 solveRPN :: String -> Double
 solveRPN = head . foldl foldingFunction [] . words
-~~~~
+```
 
 We made the expression into a list of strings, folded over it with our
 folding function and then when we were left with just one item in the
 stack, we returned that item as the answer. This was the folding
 function:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 foldingFunction :: [Double] -> String -> [Double]
 foldingFunction (x:y:ys) "*" = (x * y):ys
 foldingFunction (x:y:ys) "+" = (x + y):ys
 foldingFunction (x:y:ys) "-" = (y - x):ys
 foldingFunction xs numberString = read numberString:xs
-~~~~
+```
 
 The accumulator of the fold was a stack, which we represented with a
 list of `Double` values. As the folding function went over the RPN
@@ -1934,9 +1934,9 @@ pushed to the top.
 Let's first make our folding function capable of graceful failure. Its
 type is going to change from what it is now to this:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 foldingFunction :: [Double] -> String -> Maybe [Double]
-~~~~
+```
 
 So it will either return `Just` a new stack or it will fail with `Nothing`.
 
@@ -1947,31 +1947,31 @@ read, it also returns the part of the string that it didn't consume.
 We're going to say that it always has to consume the full input to work
 and make it into a `readMaybe` function for convenience. Here it is:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 readMaybe :: (Read a) => String -> Maybe a
 readMaybe st = case reads st of [(x,"")] -> Just x
                                 _ -> Nothing
-~~~~
+```
 
 Testing it out:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> readMaybe "1" :: Maybe Int
 Just 1
 ghci> readMaybe "GO TO HELL" :: Maybe Int
 Nothing
-~~~~
+```
 
 Okay, it seems to work. So, let's make our folding function into a
 monadic function that can fail:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 foldingFunction :: [Double] -> String -> Maybe [Double]
 foldingFunction (x:y:ys) "*" = return ((x * y):ys)
 foldingFunction (x:y:ys) "+" = return ((x + y):ys)
 foldingFunction (x:y:ys) "-" = return ((y - x):ys)
 foldingFunction xs numberString = liftM (:xs) (readMaybe numberString)
-~~~~
+```
 
 The first three cases are like the old ones, except the new stack gets
 wrapped in a `Just` (we used `return` here to do this, but we could have
@@ -1982,7 +1982,7 @@ is `Just [3.0,1.0,2.0]`. If `readMaybe numberString` results in a `Nothing`
 then the result is `Nothing`. Let's try out the folding function by
 itself:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> foldingFunction [3,2] "*"
 Just [6.0]
 ghci> foldingFunction [3,2] "-"
@@ -1993,19 +1993,19 @@ ghci> foldingFunction [] "1"
 Just [1.0]
 ghci> foldingFunction [] "1 wawawawa"
 Nothing
-~~~~
+```
 
 It looks like it's working! And now it's time for the new and improved
 `solveRPN`. Here it is ladies and gents!
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 import Data.List
 
 solveRPN :: String -> Maybe Double
 solveRPN st = do
     [result] <- foldM foldingFunction [] (words st)
     return result
-~~~~
+```
 
 Just like before, we take the string and make it into a list of words.
 Then, we do a fold, starting with the empty stack, only instead of doing
@@ -2021,7 +2021,7 @@ RPN calculation as the result of the final `Maybe` value.
 
 Let's give it a shot:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> solveRPN "1 2 * 4 +"
 Just 6.0
 ghci> solveRPN "1 2 * 4 + 5 *"
@@ -2030,7 +2030,7 @@ ghci> solveRPN "1 2 * 4"
 Nothing
 ghci> solveRPN "1 8 wharglbllargh"
 Nothing
-~~~~
+```
 
 The first failure happens because the final stack isn't a list with one
 element in it and so the pattern matching in the `do` expression fails.
@@ -2043,14 +2043,14 @@ function is just like composition, only instead of working for normal
 functions like `a -> b`, it works for monadic functions like `a -> m b`.
 For instance:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> let f = (+1) . (*100)
 ghci> f 4
 401
 ghci> let g = (\x -> return (x+1)) <=< (\x -> return (x*100))
 ghci> Just 4 >>= g
 Just 401
-~~~~
+```
 
 In this example we first composed two normal functions, applied the
 resulting function to `4` and then we composed two monadic functions and
@@ -2060,11 +2060,11 @@ If we have a bunch of functions in a list, we can compose them one all
 into one big function by just using `id` as the starting accumulator and
 the `.` function as the binary function. Here's an example:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> let f = foldr (.) id [(+1),(*100),(+1)]
 ghci> f 1
 201
-~~~~
+```
 
 The function `f` takes a number and then adds `1` to it, multiplies the
 result by `100` and then adds `1` to that. Anyway, we can compose monadic
@@ -2081,17 +2081,17 @@ knight's position on the board and returned all the possible moves that
 he can make next. Then, to generate all the possible positions that he
 can have after taking three moves, we made the following function:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 in3 start = return start >>= moveKnight >>= moveKnight >>= moveKnight
-~~~~
+```
 
 And to check if he can go from `start` to `end` in three moves, we did the
 following:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 canReachIn3 :: KnightPos -> KnightPos -> Bool
 canReachIn3 start end = end `elem` in3 start
-~~~~
+```
 
 Using monadic function composition, we can make a function like `in3`,
 only instead of generating all the positions that the knight can have
@@ -2100,12 +2100,12 @@ If you look at in3, we see that we used `moveKnight` three times and each
 time we used `>>=` to feed it all the possible previous positions. So
 now, let's make it more general. Here's how to do it:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 import Data.List
 
 inMany :: Int -> KnightPos -> [KnightPos]
 inMany x start = return start >>= foldr (<=<) return (replicate x moveKnight)
-~~~~
+```
 
 First we use `replicate` to make a list that contains `x` copies of the
 function `moveKnight`. Then, we monadically compose all those functions
@@ -2116,10 +2116,10 @@ function.
 
 Now, we can change our `canReachIn3` function to be more general as well:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 canReachIn :: Int -> KnightPos -> KnightPos -> Bool
 canReachIn x start end = end `elem` inMany x start
-~~~~
+```
 
 Making monads
 -------------
@@ -2152,9 +2152,9 @@ Let's say that every item in the list comes with another value, a
 probability of it happening. It might make sense to present this like
 this then:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 [(3,0.5),(5,0.25),(9,0.25)]
-~~~~
+```
 
 In mathematics, probabilities aren't usually expressed in percentages,
 but rather in real numbers between a 0 and 1. A 0 means that there's no
@@ -2166,24 +2166,24 @@ rational numbers that doesn't lose precision. That type is called
 if it were a fraction. The numerator and the denominator are separated
 by a `%`. Here are a few examples:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> 1%4
 1 % 4
 ghci> 1%2 + 1%2
 1 % 1
 ghci> 1%3 + 5%4
 19 % 12
-~~~~
+```
 
 The first line is just one quarter. In the second line we add two halves
 to get a whole and in the third line we add one third with five quarters
 and get nineteen twelfths. So let'use throw out our floating points and
 use `Rational` for our probabilities:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> [(3,1%2),(5,1%4),(9,1%4)]
 [(3,1 % 2),(5,1 % 4),(9,1 % 4)]
-~~~~
+```
 
 Okay, so `3` has a one out of two chance of happening while `5` and `9` will
 happen one time out of four. Pretty neat.
@@ -2193,11 +2193,11 @@ represents values with contexts too. Before we go any further, let's
 wrap this into a `newtype` because something tells me we'll be making some
 instances.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 import Data.Ratio
 
 newtype Prob a = Prob { getProb :: [(a,Rational)] } deriving Show
-~~~~
+```
 
 Alright. Is this a functor? Well, the list is a functor, so this should
 probably be a functor as well, because we just added some stuff to the
@@ -2205,19 +2205,19 @@ list. When we map a function over a list, we apply it to each element.
 Here, we'll apply it to each element as well, only we'll leave the
 probabilities as they are. Let's make an instance:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 instance Functor Prob where
     fmap f (Prob xs) = Prob $ map (\(x,p) -> (f x,p)) xs
-~~~~
+```
 
 We unwrap it from the `newtype` with pattern matching, apply the function
 `f` to the values while keeping the probabilities as they are and then
 wrap it back up. Let's see if it works:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> fmap negate (Prob [(3,1%2),(5,1%4),(9,1%4)])
 Prob {getProb = [(-3,1 % 2),(-5,1 % 4),(-9,1 % 4)]}
-~~~~
+```
 
 Another thing to note is that the probabilities should always add up to
 `1`. If those are all the things that can happen, it doesn't make sense
@@ -2258,13 +2258,13 @@ probabilities, they still add up to one.
 
 Here's this situation expressed as a probability list:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 thisSituation :: Prob (Prob Char)
 thisSituation = Prob
     [( Prob [('a',1%2),('b',1%2)] , 1%4 )
     ,( Prob [('c',1%2),('d',1%2)] , 3%4)
     ]
-~~~~
+```
 
 Notice that its type is `Prob (Prob Char)`. So now that we've figured out
 how to flatten a nested probability list, all we have to do is write the
@@ -2272,11 +2272,11 @@ code for this and then we can write `>>=` simply as `join (fmap f m)` and
 we have ourselves a monad! So here's `flatten`, which we'll use because
 the name `join` is already taken:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 flatten :: Prob (Prob a) -> Prob a
 flatten (Prob xs) = Prob $ concat $ map multAll xs
     where multAll (Prob innerxs,p) = map (\(x,r) -> (x,p*r)) innerxs
-~~~~
+```
 
 The function `multAll` takes a tuple of probability list and a probability
 `p` that comes with it and then multiplies every inner probability with `p`,
@@ -2286,12 +2286,12 @@ the resulting nested list.
 
 Now we have all that we need, we can write a `Monad` instance!
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 instance Monad Prob where
     return x = Prob [(x,1%1)]
     m >>= f = flatten (fmap f m)
     fail _ = Prob []
-~~~~
+```
 
 ![ride em cowboy](img/ride.png)
 
@@ -2325,7 +2325,7 @@ we throw all the coins at once, what are the odds of all of them landing
 tails? First, let's make probability values for a normal coin flip and
 for a loaded one:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 data Coin = Heads | Tails deriving (Show, Eq)
 
 coin :: Prob Coin
@@ -2333,11 +2333,11 @@ coin = Prob [(Heads,1%2),(Tails,1%2)]
 
 loadedCoin :: Prob Coin
 loadedCoin = Prob [(Heads,1%10),(Tails,9%10)]
-~~~~
+```
 
 And finally, the coin throwing action:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 import Data.List (all)
 
 flipThree :: Prob Bool
@@ -2346,16 +2346,16 @@ flipThree = do
     b <- coin
     c <- loadedCoin
     return (all (==Tails) [a,b,c])
-~~~~
+```
 
 Giving it a go, we see that the odds of all three landing tails are not
 that good, despite cheating with our loaded coin:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> getProb flipThree
 [(False,1 % 40),(False,9 % 40),(False,1 % 40),(False,9 % 40),
  (False,1 % 40),(False,9 % 40),(False,1 % 40),(True,9 % 40)]
-~~~~
+```
 
 All three of them will land tails nine times out of forty, which is less
 than 25%. We see that our monad doesn't know how to join all of the

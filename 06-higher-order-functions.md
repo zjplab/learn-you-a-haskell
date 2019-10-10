@@ -30,12 +30,12 @@ that function produces our desired result. That sounds like a mouthful
 but it's actually a really cool concept. The following two calls are
 equivalent:
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> max 4 5
 5
 ghci> (max 4) 5
 5
-~~~~
+```
 
 ![haskell curry](img/curry.png)
 
@@ -57,10 +57,10 @@ to another function or to seed them with some data.
 
 Take a look at this offensively simple function:
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 multThree :: (Num a) => a -> a -> a -> a
 multThree x y z = x * y * z
-~~~~
+```
 
 What really happens when we do `multThree 3 5 9` or `((multThree 3) 5) 9`?
 First, `3` is applied to `multThree`, because they're separated by a space.
@@ -76,24 +76,24 @@ function takes an `a` and returns a function of type `(Num a) => a -> a`.
 And this function, finally, just takes an `a` and returns an `a`. Take a
 look at this:
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> let multTwoWithNine = multThree 9
 ghci> multTwoWithNine 2 3
 54
 ghci> let multWithEighteen = multTwoWithNine 2
 ghci> multWithEighteen 10
 180
-~~~~
+```
 
 By calling functions with too few parameters, so to speak, we're
 creating new functions on the fly. What if we wanted to create a
 function that takes a number and compares it to `100`? We could do
 something like this:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 compareWithHundred :: (Num a, Ord a) => a -> Ordering
 compareWithHundred x = compare 100 x
-~~~~
+```
 
 If we call it with `99`, it returns a `GT`. Simple stuff. Notice that the `x`
 is on the right hand side on both sides of the equation. Now let's think
@@ -101,10 +101,10 @@ about what `compare 100` returns. It returns a function that takes a
 number and compares it with `100`. Wow! Isn't that the function we wanted?
 We can rewrite this as:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 compareWithHundred :: (Num a, Ord a) => a -> Ordering
 compareWithHundred = compare 100
-~~~~
+```
 
 The type declaration stays the same, because `compare 100` returns a
 function. Compare has a type of `(Ord a) => a -> (a -> Ordering)` and
@@ -121,19 +121,19 @@ supply a parameter on one side. That creates a function that takes one
 parameter and then applies it to the side that's missing an operand. An
 insultingly trivial function:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 divideByTen :: (Floating a) => a -> a
 divideByTen = (/10)
-~~~~
+```
 
 Calling, say, `divideByTen 200` is equivalent to doing `200 / 10`, as is
 doing `(/10) 200`. A function that checks if a character supplied to it is
 an uppercase letter:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 isUpperAlphanum :: Char -> Bool
 isUpperAlphanum = (`elem` ['A'..'Z'])
-~~~~
+```
 
 The only special thing about sections is using `-`. From the definition of
 sections, `(-4)` would result in a function that takes a number and
@@ -145,7 +145,7 @@ as a parameter, partially apply the `subtract` function like so:
 What happens if we try to just do `multThree 3 4` in GHCI instead of
 binding it to a name with a *let* or passing it to another function?
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> multThree 3 4
 <interactive>:1:0:
     No instance for (Show (t -> t))
@@ -153,7 +153,7 @@ ghci> multThree 3 4
     Possible fix: add an instance declaration for (Show (t -> t))
     In the expression: print it
     In a 'do' expression: print it
-~~~~
+```
 
 GHCI is telling us that the expression produced a function of type
 `a -> a`
@@ -171,10 +171,10 @@ Functions can take functions as parameters and also return functions. To
 illustrate this, we're going to make a function that takes a function
 and then applies it twice to something!
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 applyTwice :: (a -> a) -> a -> a
 applyTwice f x = f (f x)
-~~~~
+```
 
 ![rocktopus](img/bonus.png)
 
@@ -202,7 +202,7 @@ as a function, applying `x` to it by separating them with a space and then
 applying the result to `f` again. Anyway, playing around with the
 function:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> applyTwice (+3) 10
 16
 ghci> applyTwice (++ " HAHA") "HEY"
@@ -213,7 +213,7 @@ ghci> applyTwice (multThree 2 2) 9
 144
 ghci> applyTwice (3:) [1]
 [3,3,1]
-~~~~
+```
 
 The awesomeness and usefulness of partial application is evident. If our
 function requires us to pass it a function that takes only one
@@ -226,12 +226,12 @@ takes a function and two lists as parameters and then joins the two
 lists by applying the function between corresponding elements. Here's
 how we'll implement it:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 zipWith' :: (a -> b -> c) -> [a] -> [b] -> [c]
 zipWith' _ [] _ = []
 zipWith' _ _ [] = []
 zipWith' f (x:xs) (y:ys) = f x y : zipWith' f xs ys
-~~~~
+```
 
 Look at the type declaration. The first parameter is a function that
 takes two things and produces a third thing. They don't have to be of
@@ -256,7 +256,7 @@ order function can be used for a multitude of different tasks if it's
 general enough. Here's a little demonstration of all the different
 things our `zipWith'` function can do:
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> zipWith' (+) [4,2,5,6] [2,6,2,3]
 [6,8,7,9]
 ghci> zipWith' max [6,3,2,1] [7,3,1,5]
@@ -267,7 +267,7 @@ ghci> zipWith' (*) (replicate 5 2) [1..]
 [2,4,6,8,10]
 ghci> zipWith' (zipWith' (*)) [[1,2,3],[3,5,6],[2,3,4]] [[3,2,2],[3,4,5],[5,4,3]]
 [[3,4,6],[9,20,30],[10,12,12]]
-~~~~
+```
 
 As you can see, a single higher order function can be used in very
 versatile ways. Imperative programming usually uses stuff like for
@@ -283,11 +283,11 @@ called `flip`. Flip simply takes a function and returns a function that is
 like our original function, only the first two arguments are flipped. We
 can implement it like so:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 flip' :: (a -> b -> c) -> (b -> a -> c)
 flip' f = g
     where g x y = f y x
-~~~~
+```
 
 Reading the type declaration, we say that it takes a function that takes
 an `a` and a `b` and returns a function that takes a `b` and an `a`. But because
@@ -300,10 +300,10 @@ wrote that `g x y = f y x`. If that's true, then `f y x = g x y` must also
 hold, right? Keeping that in mind, we can define this function in an
 even simpler manner.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 flip' :: (a -> b -> c) -> b -> a -> c
 flip' f y x = f x y
-~~~~
+```
 
 Here, we take advantage of the fact that functions are curried. When we
 call `flip' f` without the parameters `y` and `x`, it will return an `f` that
@@ -313,12 +313,12 @@ of currying when making higher-order functions by thinking ahead and
 writing what their end result would be if they were called fully
 applied.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> flip' zip [1,2,3,4,5] "hello"
 [('h',1),('e',2),('l',3),('l',4),('o',5)]
 ghci> zipWith (flip' div) [2,2..] [10,8,6,4,2]
 [5,4,3,2,1]
-~~~~
+```
 
 Maps and filters
 ----------------
@@ -327,11 +327,11 @@ Maps and filters
 element in the list, producing a new list. Let's see what its type
 signature is and how it's defined.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 map :: (a -> b) -> [a] -> [b]
 map _ [] = []
 map f (x:xs) = f x : map f xs
-~~~~
+```
 
 The type signature says that it takes a function that takes an `a` and
 returns a `b`, a list of `a`'s and returns a list of `b`'s. It's interesting
@@ -340,7 +340,7 @@ tell what it does. `map` is one of those really versatile higher-order
 functions that can be used in millions of different ways. Here it is in
 action:
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> map (+3) [1,5,3,1,6]
 [4,8,6,4,9]
 ghci> map (++ "!") ["BIFF", "BANG", "POW"]
@@ -351,7 +351,7 @@ ghci> map (map (^2)) [[1,2],[3,4,5,6],[7,8]]
 [[1,4],[9,16,25,36],[49,64]]
 ghci> map fst [(1,2),(3,5),(6,3),(2,6),(2,5)]
 [1,3,6,2,2]
-~~~~
+```
 
 You've probably noticed that each of these could be achieved with a list
 comprehension. `map (+3) [1,5,3,1,6]` is the same as writing
@@ -367,18 +367,18 @@ that returns a boolean value) and a list and then returns the list of
 elements that satisfy the predicate. The type signature and
 implementation go like this:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 filter :: (a -> Bool) -> [a] -> [a]
 filter _ [] = []
 filter p (x:xs)
     | p x       = x : filter p xs
     | otherwise = filter p xs
-~~~~
+```
 
 Pretty simple stuff. If `p x` evaluates to `True`, the element gets included
 in the new list. If it doesn't, it stays out. Some usage examples:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> filter (>3) [1,5,3,2,1,6,4,3,2,1]
 [5,6,4]
 ghci> filter (==3) [1,2,3,4,5]
@@ -391,7 +391,7 @@ ghci> filter (`elem` ['a'..'z']) "u LaUgH aT mE BeCaUsE I aM diFfeRent"
 "uagameasadifeent"
 ghci> filter (`elem` ['A'..'Z']) "i lauGh At You BecAuse u r aLL the Same"
 "GAYBALLS"
-~~~~
+```
 
 All of this could also be achieved with list comprehensions by the use of
 predicates. There's no set rule for when to use `map` and `filter` versus
@@ -405,14 +405,14 @@ We used list comprehensions to filter out the list elements that are
 smaller than (or equal to) and larger than the pivot. We can achieve the
 same functionality in a more readable way by using `filter`:
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 quicksort :: (Ord a) => [a] -> [a]
 quicksort [] = []
 quicksort (x:xs) =
     let smallerSorted = quicksort (filter (<=x) xs)
         biggerSorted = quicksort (filter (>x) xs)
     in  smallerSorted ++ [x] ++ biggerSorted
-~~~~
+```
 
 ![map](img/map.png)
 
@@ -435,11 +435,11 @@ Let's *find the largest number under 100,000 that's divisible by 3829*.
 To do that, we'll just filter a set of possibilities in which we know
 the solution lies.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 largestDivisible :: (Integral a) => a
 largestDivisible = head (filter p [100000,99999..])
     where p x = x `mod` 3829 == 0
-~~~~
+```
 
 We first make a list of all numbers lower than 100,000, descending. Then
 we filter it by our predicate and because the numbers are sorted in a
@@ -465,20 +465,20 @@ we'll take elements from that list while they are smaller than 10,000.
 Finally, we'll get the sum of that list. We don't even have to define a
 function for that, we can do it in one line in GHCI:
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> sum (takeWhile (<10000) (filter odd (map (^2) [1..])))
 166650
-~~~~
+```
 
 Awesome! We start with some initial data (the infinite list of all
 natural numbers) and then we map over it, filter it and cut it until it
 suits our needs and then we just sum it up. We could have also written
 this using list comprehensions:
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> sum (takeWhile (<10000) [n^2 | n <- [1..], odd (n^2)])
 166650
-~~~~
+```
 
 It's a matter of taste as to which one you find prettier. Again,
 Haskell's property of laziness is what makes this possible. We can map
@@ -503,34 +503,34 @@ Now what we want to know is this: *for all starting numbers between 1
 and 100, how many chains have a length greater than 15?* First off,
 we'll write a function that produces a chain:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 chain :: (Integral a) => a -> [a]
 chain 1 = [1]
 chain n
     | even n =  n:chain (n `div` 2)
     | odd n  =  n:chain (n*3 + 1)
-~~~~
+```
 
 Because the chains end at 1, that's the edge case. This is a pretty
 standard recursive function.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> chain 10
 [10,5,16,8,4,2,1]
 ghci> chain 1
 [1]
 ghci> chain 30
 [30,15,46,23,70,35,106,53,160,80,40,20,10,5,16,8,4,2,1]
-~~~~
+```
 
 Yay! It seems to be working correctly. And now, the function that tells
 us the answer to our question:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 numLongChains :: Int
 numLongChains = length (filter isLong (map chain [1..100]))
     where isLong xs = length xs > 15
-~~~~
+```
 
 We map the `chain` function to `[1..100]` to get a list of chains, which are
 themselves represented as lists. Then, we filter them by a predicate
@@ -558,11 +558,11 @@ only take one parameter, so `(Num a) => [a -> a]`. `map (*) [0..]`
 produces a list like the one we'd get by writing
 `[(0*),(1*),(2*),(3*),(4*),(5*)...`
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> let listOfFuns = map (*) [0..]
 ghci> (listOfFuns !! 4) 5
 20
-~~~~
+```
 
 Getting the element with the index `4` from our list returns a function
 that's equivalent to `(4*)`. And then, we just apply `5` to that function.
@@ -587,10 +587,10 @@ in our `numLongChains` function to make the `isLong` function for the sole
 purpose of passing it to `filter`. Well, instead of doing that, we can use
 a lambda:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 numLongChains :: Int
 numLongChains = length (filter (\xs -> length xs > 15) (map chain [1..100]))
-~~~~
+```
 
 Lambdas are expressions, that's why we can just pass them like that. The
 expression `(\xs -> length xs > 15)` returns a function that tells us
@@ -609,10 +609,10 @@ more readable.
 
 Like normal functions, lambdas can take any number of parameters:
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> zipWith (\a b -> (a * 30 + 3) / b) [5,4,3,2,1] [1,2,3,4,5]
 [153.0,61.5,31.0,15.75,6.6]
-~~~~
+```
 
 And like normal functions, you can pattern match in lambdas. The only
 difference is that you can't define several patterns for one parameter,
@@ -620,24 +620,24 @@ like making a `[]` and a `(x:xs)` pattern for the same parameter and then
 having values fall through. If a pattern matching fails in a lambda, a
 runtime error occurs, so be careful when pattern matching in lambdas!
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> map (\(a,b) -> a + b) [(1,2),(3,5),(6,3),(2,6),(2,5)]
 [3,8,9,8,7]
-~~~~
+```
 
 Lambdas are normally surrounded by parentheses unless we mean for them
 to extend all the way to the right. Here's something interesting: due to
 the way functions are curried by default, these two are equivalent:
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 addThree :: (Num a) => a -> a -> a -> a
 addThree x y z = x + y + z
-~~~~
+```
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 addThree :: (Num a) => a -> a -> a -> a
 addThree = \x -> \y -> \z -> x + y + z
-~~~~
+```
 
 If we define a function like this, it's obvious why the type declaration
 is what it is. There are three `->`'s in both the type declaration and
@@ -648,10 +648,10 @@ currying.
 However, there are times when using this notation is cool. I think that
 the `flip` function is the most readable when defined like so:
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 flip' :: (a -> b -> c) -> b -> a -> c
 flip' f = \x y -> f y x
-~~~~
+```
 
 Even though that's the same as writing `flip' f x y = f y x`, we make it
 obvious that this will be used for producing a new function most of the
@@ -694,17 +694,17 @@ that value and the next element, etc.
 Let's implement `sum` again, only this time, we'll use a fold instead of
 explicit recursion.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 sum' :: (Num a) => [a] -> a
 sum' xs = foldl (\acc x -> acc + x) 0 xs
-~~~~
+```
 
 Testing, one two three:
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> sum' [3,5,2,1]
 11
-~~~~
+```
 
 ![foldl](img/foldl.png)
 
@@ -727,10 +727,10 @@ side by the accumulator. Om nom nom nom! If we take into account that
 functions are curried, we can write this implementation ever more
 succinctly, like so:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 sum' :: (Num a) => [a] -> a
 sum' = foldl (+) 0
-~~~~
+```
 
 The lambda function `(\acc x -> acc + x)` is the same as `(+)`. We can
 omit the `xs` as the parameter because calling `foldl (+) 0` will return a
@@ -742,10 +742,10 @@ on to right folds. I'm sure you all know that `elem` checks whether a
 value is part of a list so I won't go into that again (whoops, just
 did!). Let's implement it with a left fold.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 elem' :: (Eq a) => a -> [a] -> Bool
 elem' y ys = foldl (\acc x -> if x == y then True else acc) False ys
-~~~~
+```
 
 Well, well, well, what do we have here? The starting value and
 accumulator here is a boolean value. The type of the accumulator value
@@ -774,10 +774,10 @@ implementing the map function with a right fold. The accumulator will be
 a list, we'll be accumulating the mapped list element by element. From
 that, it's obvious that the starting element will be an empty list.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 map' :: (a -> b) -> [a] -> [b]
 map' f xs = foldr (\x acc -> f x : acc) [] xs
-~~~~
+```
 
 If we're mapping `(+3)` to `[1,2,3]`, we approach the list from the right
 side. We take the last element, which is `3` and apply the function to it,
@@ -824,7 +824,7 @@ empty list, you can probably use a `foldl1` or `foldr1` to implement it.
 Just to show you how powerful folds are, we're going to implement a
 bunch of standard library functions by using folds:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 maximum' :: (Ord a) => [a] -> a
 maximum' = foldr1 (\x acc -> if x > acc then x else acc)
 
@@ -842,7 +842,7 @@ head' = foldr1 (\x _ -> x)
 
 last' :: [a] -> a
 last' = foldl1 (\_ x -> x)
-~~~~
+```
 
 `head` is better implemented by pattern matching, but this just goes to
 show, you can still achieve it by using folds. Our `reverse'` definition
@@ -876,7 +876,7 @@ if you evaluate that expression, you get `[6,5,4,3]`.
 intermediate accumulator states in the form of a list. There are also
 `scanl1` and `scanr1`, which are analogous to `foldl1` and `foldr1`.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> scanl (+) 0 [3,5,2,1]
 [0,3,8,10,11]
 ghci> scanr (+) 0 [3,5,2,1]
@@ -885,7 +885,7 @@ ghci> scanl1 (\acc x -> if x > acc then x else acc) [3,4,5,3,7,9,2,1]
 [3,4,5,5,7,9,9,9]
 ghci> scanl (flip (:)) [] [3,2,1]
 [[],[3],[2,3],[1,2,3]]
-~~~~
+```
 
 When using a `scanl`, the final result will be in the last element of the
 resulting list while a `scanr` will place the result in the head.
@@ -903,19 +903,19 @@ square root of 2. The third will be that plus the square root of 3. If
 there are X sums under 1000, then it takes X+1 elements for the sum to
 exceed 1000.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 sqrtSums :: Int
 sqrtSums = length (takeWhile (<1000) (scanl1 (+) (map sqrt [1..]))) + 1
-~~~~
+```
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> sqrtSums
 131
 ghci> sum (map sqrt [1..131])
 1005.0942035344083
 ghci> sum (map sqrt [1..130])
 993.6486803921487
-~~~~
+```
 
 We use `takeWhile` here instead of `filter` because `filter` doesn't work on
 infinite lists. Even though we know the list is ascending, `filter`
@@ -928,10 +928,10 @@ Function application with \$
 Alright, next up, we'll take a look at the `$` function, also called
 *function application*. First of all, let's check out how it's defined:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ($) :: (a -> b) -> a -> b
 f $ x = f x
-~~~~
+```
 
 ![dollar](img/dollar.png)
 
@@ -970,10 +970,10 @@ But apart from getting rid of parentheses, `$` means that function
 application can be treated just like another function. That way, we can,
 for instance, map function application over a list of functions.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> map ($ 3) [(4+), (10*), (^2), sqrt]
 [7.0,30.0,9.0,1.7320508075688772]
-~~~~
+```
 
 <a name="composition"></a>
 
@@ -989,10 +989,10 @@ parameter, say, *x* is the equivalent of calling *g* with the parameter
 In Haskell, function composition is pretty much the same thing. We do
 function composition with the `.` function, which is defined like so:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 (.) :: (b -> c) -> (a -> b) -> a -> c
 f . g = \x -> f (g x)
-~~~~
+```
 
 ![notes](img/notes.png)
 
@@ -1009,34 +1009,34 @@ list of numbers and we want to turn them all into negative numbers. One
 way to do that would be to get each number's absolute value and then
 negate it, like so:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> map (\x -> negate (abs x)) [5,-3,-6,7,-3,2,-19,24]
 [-5,-3,-6,-7,-3,-2,-19,-24]
-~~~~
+```
 
 Notice the lambda and how it looks like the result function composition.
 Using function composition, we can rewrite that as:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> map (negate . abs) [5,-3,-6,7,-3,2,-19,24]
 [-5,-3,-6,-7,-3,-2,-19,-24]
-~~~~
+```
 
 Fabulous! Function composition is right-associative, so we can compose
 many functions at a time. The expression `f (g (z x))` is equivalent to
 `(f . g . z) x`. With that in mind, we can turn
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> map (\xs -> negate (sum (tail xs))) [[1..5],[3..6],[1..7]]
 [-14,-15,-27]
-~~~~
+```
 
 into
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> map (negate . sum . tail) [[1..5],[3..6],[1..7]]
 [-14,-15,-27]
-~~~~
+```
 
 But what about functions that take several parameters? Well, if we want
 to use them in function composition, we usually have to partially apply
@@ -1066,10 +1066,10 @@ Another common use of function composition is defining functions in the
 so-called point free style (also called the point*less* style). Take for
 example this function that we wrote earlier:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 sum' :: (Num a) => [a] -> a
 sum' xs = foldl (+) 0 xs
-~~~~
+```
 
 The `xs` is exposed on both right sides. Because of currying, we can omit
 the `xs` on both sides, because calling `foldl (+) 0` creates a function
@@ -1077,18 +1077,18 @@ that takes a list. Writing the function as `sum' = foldl (+) 0` is called
 writing it in point free style. How would we write this in point free
 style?
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 fn x = ceiling (negate (tan (cos (max 50 x))))
-~~~~
+```
 
 We can't just get rid of the `x` on both right right sides. The `x` in the
 function body has parentheses after it. `cos (max 50)` wouldn't make
 sense. You can't get the cosine of a function. What we can do is express
 `fn` as a composition of functions.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 fn = ceiling . negate . tan . cos . max 50
-~~~~
+```
 
 Excellent! Many times, a point free style is more readable and concise,
 because it makes you think about functions and what kind of functions
@@ -1107,29 +1107,29 @@ In the section about maps and filters, we solved a problem of finding
 the sum of all odd squares that are smaller than 10,000. Here's what the
 solution looks like when put into a function.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 oddSquareSum :: Integer
 oddSquareSum = sum (takeWhile (<10000) (filter odd (map (^2) [1..])))
-~~~~
+```
 
 Being such a fan of function composition, I would have probably written
 that like this:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 oddSquareSum :: Integer
 oddSquareSum = sum . takeWhile (<10000) . filter odd . map (^2) $ [1..]
-~~~~
+```
 
 However, if there was a chance of someone else reading that code, I
 would have written it like this:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 oddSquareSum :: Integer
 oddSquareSum =
     let oddSquares = filter odd $ map (^2) [1..]
         belowLimit = takeWhile (<10000) oddSquares
     in  sum belowLimit
-~~~~
+```
 
 It wouldn't win any code golf competition, but someone reading the
 function will probably find it easier to read than a composition chain.

@@ -108,13 +108,13 @@ that's our final result!
 
 So here's a sketch of that function:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 import Data.List
 
 solveRPN :: (Num a) => String -> a
 solveRPN expression = head (foldl foldingFunction [] (words expression))
     where   foldingFunction stack item = ...
-~~~~
+```
 
 We take the expression and turn it into a list of items. Then we fold
 over that list of items with the folding function. Mind the `[]`, which
@@ -130,27 +130,27 @@ return `[40]`. But before that, let's turn our function into [point-free
 style](#composition) because it has a lot of
 parentheses that are kind of freaking me out:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 import Data.List
 
 solveRPN :: (Num a) => String -> a
 solveRPN = head . foldl foldingFunction [] . words
     where   foldingFunction stack item = ...
-~~~~
+```
 
 Ah, there we go. Much better. So, the folding function will take a stack
 and an item and return a new stack. We'll use pattern matching to get
 the top items of a stack and to pattern match against operators like
 `"*"` and `"-"`.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 solveRPN :: (Num a, Read a) => String -> a
 solveRPN = head . foldl foldingFunction [] . words
     where   foldingFunction (x:y:ys) "*" = (x * y):ys
             foldingFunction (x:y:ys) "+" = (x + y):ys
             foldingFunction (x:y:ys) "-" = (y - x):ys
             foldingFunction xs numberString = read numberString:xs
-~~~~
+```
 
 We laid this out as four patterns. The patterns will be tried from top
 to bottom. First the folding function will see if the current item is
@@ -186,7 +186,7 @@ popped off the stack, added together and pushed back. The final stack is
 
 Let's play around with our function:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> solveRPN "10 4 3 + 2 * -"
 -4
 ghci> solveRPN "2 3 +"
@@ -199,7 +199,7 @@ ghci> solveRPN "90 34 12 33 55 66 + * - + -"
 4037
 ghci> solveRPN "90 3 -"
 87
-~~~~
+```
 
 Cool, it works! One nice thing about this function is that it can be
 easily modified to support various other operators. They don't even have
@@ -213,7 +213,7 @@ Let's modify our function to take a few more operators. For simplicity's
 sake, we'll change its type declaration so that it returns a number of
 type `Float`.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 import Data.List
 
 solveRPN :: String -> Float
@@ -226,7 +226,7 @@ solveRPN = head . foldl foldingFunction [] . words
             foldingFunction (x:xs) "ln" = log x:xs
             foldingFunction xs "sum" = [sum xs]
             foldingFunction xs numberString = read numberString:xs
-~~~~
+```
 
 Wow, great! `/` is division of course and `**` is floating point
 exponentiation. With the logarithm operator, we just pattern match
@@ -235,7 +235,7 @@ one element to perform its natural logarithm. With the sum operator, we
 just return a stack that has only one element, which is the sum of the
 stack so far.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> solveRPN "2.7 ln"
 0.9932518
 ghci> solveRPN "10 10 10 10 sum 4 /"
@@ -244,15 +244,15 @@ ghci> solveRPN "10 10 10 10 10 sum 4 /"
 12.5
 ghci> solveRPN "10 2 ^"
 100.0
-~~~~
+```
 
 Notice that we can include floating point numbers in our expression
 because `read` knows how to read them.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> solveRPN "43.2425 0.5 ^"
 6.575903
-~~~~
+```
 
 I think that making a function that can calculate arbitrary floating
 point RPN expressions and has the option to be easily extended in 10
@@ -294,7 +294,7 @@ Our job is to make a program that takes input that represents a road
 system and print out what the shortest path across it is. Here's what
 the input would look like for this case:
 
-~~~~ {.plain name="code"}
+```haskell
 50
 10
 30
@@ -307,7 +307,7 @@ the input would look like for this case:
 10
 8
 0
-~~~~
+```
 
 To mentally parse the input file, read it in threes and mentally split
 the road system into sections. Each section is comprised of a road A,
@@ -415,10 +415,10 @@ length of one, we see that every crossroads (or node) points to the node
 on the other side and also to the next one on its side. Except for the
 last nodes, they just point to the other side.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 data Node = Node Road Road | EndNode Road
 data Road = Road Int Node
-~~~~
+```
 
 A node is either a normal node and has information about the road that
 leads to the other main road and the road that leads to the next node or
@@ -432,10 +432,10 @@ Another way would be to use `Maybe` for the road parts that point forward.
 Each node has a road part that point to the opposite road, but only
 those nodes that aren't the end ones have road parts that point forward.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 data Node = Node Road (Maybe Road)
 data Road = Road Int Node
-~~~~
+```
 
 This is an alright way to represent the road system in Haskell and we
 could certainly solve this problem with it, but maybe we could come up
@@ -452,10 +452,10 @@ and `10, 8, 0`.
 It's always good to keep our data types as simple as possible, although
 not any simpler!
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 data Section = Section { getA :: Int, getB :: Int, getC :: Int } deriving (Show)
 type RoadSystem = [Section]
-~~~~
+```
 
 This is pretty much perfect! It's as simple as it goes and I have a
 feeling it'll work perfectly for implementing our solution. `Section` is a
@@ -475,10 +475,10 @@ its three road parts. We introduce a type synonym as well, saying that
 Our road system from Heathrow to London can now be represented like
 this:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 heathrowToLondon :: RoadSystem
 heathrowToLondon = [Section 50 10 30, Section 5 90 20, Section 40 2 25, Section 10 8 0]
-~~~~
+```
 
 All we need to do now is to implement the solution that we came up with
 previously in Haskell. What should the type declaration for a function
@@ -487,18 +487,18 @@ take a road system as a parameter and return a path. We'll represent a
 path as a list as well. Let's introduce a `Label` type that's just an
 enumeration of either `A`, `B` or `C`. We'll also make a type synonym: `Path`.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 data Label = A | B | C deriving (Show)
 type Path = [(Label, Int)]
-~~~~
+```
 
 Our function, we'll call it `optimalPath` should thus have a type
 declaration of `optimalPath :: RoadSystem -> Path`. If called with the
 road system `heathrowToLondon`, it should return the following path:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 [(B,10),(C,30),(A,5),(C,20),(B,2),(B,8)]
-~~~~
+```
 
 We're going to have to walk over the list with the sections from left to
 right and keep the optimal path on A and optimal path on B as we go
@@ -522,7 +522,7 @@ and implement this function, because it's bound to be useful.
 > can be used as the binary function for a left fold, which has to
 > have a type of `a -> b -> a`
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 roadStep :: (Path, Path) -> Section -> (Path, Path)
 roadStep (pathA, pathB) (Section a b c) =
     let priceA = sum $ map snd pathA
@@ -538,7 +538,7 @@ roadStep (pathA, pathB) (Section a b c) =
                         then (B,b):pathB
                         else (C,c):(A,a):pathA
     in  (newPathToA, newPathToB)
-~~~~
+```
 
 ![this is you](img/guycar.png)
 
@@ -578,10 +578,10 @@ Let's run this function on the first section of `heathrowToLondon`.
 Because it's the first section, the best paths on A and B parameter will
 be a pair of empty lists.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> roadStep ([], []) (head heathrowToLondon)
 ([(C,30),(B,10)],[(B,10)])
-~~~~
+```
 
 Remember, the paths are reversed, so read them from right to left. From
 this we can read that the best path to the next A is to start on B and
@@ -604,14 +604,14 @@ walked over all the sections, we're left with a pair of optimal paths
 and the shorter of them is our answer. With this in mind, we can
 implement `optimalPath`.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 optimalPath :: RoadSystem -> Path
 optimalPath roadSystem =
     let (bestAPath, bestBPath) = foldl roadStep ([],[]) roadSystem
     in  if sum (map snd bestAPath) <= sum (map snd bestBPath)
             then reverse bestAPath
             else reverse bestBPath
-~~~~
+```
 
 We left fold over `roadSystem` (remember, it's a list of sections) with
 the starting accumulator being a pair of empty paths. The result of that
@@ -622,10 +622,10 @@ paths so far were reversed due to us choosing consing over appending.
 
 Let's test this!
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> optimalPath heathrowToLondon
 [(B,10),(C,30),(A,5),(C,20),(B,2),(B,8),(C,0)]
-~~~~
+```
 
 This is the result that we were supposed to get! Awesome! It differs
 from our expected result a bit because there's a step `(C,0)` at the end,
@@ -642,12 +642,12 @@ First off, let's make a function that takes a list and splits it into
 groups of the same size. We'll call it `groupsOf`. For a parameter of
 `[1..10]`, `groupsOf 3` should return `[[1,2,3],[4,5,6],[7,8,9],[10]]`.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 groupsOf :: Int -> [a] -> [[a]]
 groupsOf 0 _ = undefined
 groupsOf _ [] = []
 groupsOf n xs = take n xs : groupsOf n (drop n xs)
-~~~~
+```
 
 A standard recursive function. For an `xs` of `[1..10]` and an `n` of `3`, this
 equals `[1,2,3] : groupsOf 3 [4,5,6,7,8,9,10]`. When the recursion is
@@ -655,7 +655,7 @@ done, we get our list in groups of three. And here's our `main` function,
 which reads from the standard input, makes a `RoadSystem` out of it and
 prints out the shortest path:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 import Data.List
 
 main = do
@@ -667,7 +667,7 @@ main = do
         pathPrice = sum $ map snd path
     putStrLn $ "The best path to take is: " ++ pathString
     putStrLn $ "The price is: " ++ show pathPrice
-~~~~
+```
 
 First, we get all the contents from the standard input. Then, we call
 `lines` with our contents to convert something like `"50\n10\n30\n...` to
@@ -682,7 +682,7 @@ price in a nice textual representation and print it out.
 
 We save the following text
 
-~~~~ {.plain name="code"}
+```haskell
 50
 10
 30
@@ -695,15 +695,15 @@ We save the following text
 10
 8
 0
-~~~~
+```
 
 in a file called `paths.txt` and then feed it to our program.
 
-~~~~ {.plain name="code"}
+```haskell
 $ cat paths.txt | runhaskell heathrow.hs
 The best path to take is: BCACBBC
 The price is: 75
-~~~~
+```
 
 Works like a charm! You can use your knowledge of the `Data.Random` module
 to generate a much longer system of roads, which you can then feed to

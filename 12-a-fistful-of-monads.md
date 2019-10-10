@@ -25,9 +25,9 @@ get functions of type `r -> b`. To answer this question of how to map a
 function over some data type, all we had to do was look at the type of
 `fmap`:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 fmap :: (Functor f) => (a -> b) -> f a -> f b
-~~~~
+```
 
 And then make it work for our data type by writing the appropriate
 `Functor` instance.
@@ -40,9 +40,9 @@ don't want to apply it to `Just 5` but to a `Nothing` instead? Or if we have
 even? For this, the `Applicative` type class was introduced, in which we
 wanted the answer to the following type:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 (<*>) :: (Applicative f) => f (a -> b) -> f a -> f b
-~~~~
+```
 
 We also saw that we can take a normal value and wrap it inside a data
 type. For instance, we can take a `1` and wrap it so that it becomes a
@@ -60,14 +60,14 @@ It was neat to see how the `Applicative` type class allowed us to use
 normal functions on these values with context and how that context was
 preserved. Observe:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> (*) <$> Just 2 <*> Just 8
 Just 16
 ghci> (++) <$> Just "klingon" <*> Nothing
 Nothing
 ghci> (-) <$> [3,4] <*> [1,2,3]
 [2,1,0,3,2,1]
-~~~~
+```
 
 Ah, cool, so now that we treat them as applicative values, `Maybe a`
 values represent computations that might have failed, `[a]` values
@@ -80,9 +80,9 @@ do you apply to it a function that takes a normal `a` and returns a value
 with a context? That is, how do you apply a function of type `a -> m b`
 to a value of type `m a`? So essentially, we will want this function:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 (>>=) :: (Monad m) => m a -> (a -> m b) -> m b
-~~~~
+```
 
 **If we have a fancy value and a function that takes a normal value but
 returns a fancy value, how do we feed that fancy value into the
@@ -128,12 +128,12 @@ otherwise the `Nothing` is kept because there's nothing to map it over!
 
 Like this:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> fmap (++"!") (Just "wisdom")
 Just "wisdom!"
 ghci> fmap (++"!") Nothing
 Nothing
-~~~~
+```
 
 As an applicative functor, it functions similarly. However, applicatives
 also have the function wrapped. `Maybe` is an applicative functor in such
@@ -144,25 +144,25 @@ sense because if you're missing either the function or the thing you're
 applying it to, you can't make something up out of thin air, so you have
 to propagate the failure:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> Just (+3) <*> Just 3
 Just 6
 ghci> Nothing <*> Just "greed"
 Nothing
 ghci> Just ord <*> Nothing
 Nothing
-~~~~
+```
 
 When we use the applicative style to have normal functions act on `Maybe`
 values, it's similar. All the values have to be `Just` values, otherwise
 it's all for `Nothing`!
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> max <$> Just 3 <*> Just 6
 Just 6
 ghci> max <$> Just 3 <*> Nothing
 Nothing
-~~~~
+```
 
 And now, let's think about how we would do `>>=` for `Maybe`. Like we
 said, `>>=` takes a monadic value, and a function that takes a normal
@@ -177,12 +177,12 @@ how it does that, we can use the intuition that we have from `Maybe` being
 an applicative functor. Let's say that we have a function `\x -> Just (x+1)`.
 It takes a number, adds `1` to it and wraps it in a `Just`:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> (\x -> Just (x+1)) 1
 Just 2
 ghci> (\x -> Just (x+1)) 100
 Just 101
-~~~~
+```
 
 If we feed it `1`, it evaluates to `Just 2`. If we give it the number `100`,
 the result is `Just 101`. Very straightforward. Now here's the kicker: how
@@ -197,17 +197,17 @@ Instead of calling it `>>=`, let's call it `applyMaybe` for now. It takes
 a `Maybe a` and a function that returns a `Maybe b` and manages to apply
 that function to the `Maybe a`. Here it is in code:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 applyMaybe :: Maybe a -> (a -> Maybe b) -> Maybe b
 applyMaybe Nothing f  = Nothing
 applyMaybe (Just x) f = f x
-~~~~
+```
 
 Okay, now let's play with it for a bit. We'll use it as an infix
 function so that the `Maybe` value is on the left side and the function on
 the right:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> Just 3 `applyMaybe` \x -> Just (x+1)
 Just 4
 ghci> Just "smile" `applyMaybe` \x -> Just (x ++ " :)")
@@ -216,7 +216,7 @@ ghci> Nothing `applyMaybe` \x -> Just (x+1)
 Nothing
 ghci> Nothing `applyMaybe` \x -> Just (x ++ " :)")
 Nothing
-~~~~
+```
 
 In the above example, we see that when we used `applyMaybe` with a `Just`
 value and a function, the function simply got applied to the value
@@ -224,12 +224,12 @@ inside the `Just`. When we tried to use it with a `Nothing`, the whole
 result was `Nothing`. What about if the function returns a Nothing? Let's
 see:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> Just 3 `applyMaybe` \x -> if x > 2 then Just x else Nothing
 Just 3
 ghci> Just 1 `applyMaybe` \x -> if x > 2 then Just x else Nothing
 Nothing
-~~~~
+```
 
 Just what we expected. If the monadic value on the left is a `Nothing`,
 the whole thing is `Nothing`. And if the function on the right returns a
@@ -260,7 +260,7 @@ have the `Applicative` type class, monads come with their own type class:
 `Monad`! Wow, who would have thought? This is what the type class looks
 like:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 class Monad m where
     return :: a -> m a
 
@@ -271,7 +271,7 @@ class Monad m where
 
     fail :: String -> m a
     fail msg = error msg
-~~~~
+```
 
 ![this is you on monads](img/kid.png)
 
@@ -319,13 +319,13 @@ don't need to concern ourselves with `fail` too much for now.
 Now that we know what the `Monad` type class looks like, let's take a look
 at how `Maybe` is an instance of `Monad`!
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 instance Monad Maybe where
     return x = Just x
     Nothing >>= f = Nothing
     Just x >>= f  = f x
     fail _ = Nothing
-~~~~
+```
 
 `return` is the same as `pure`, so that one's a no-brainer. We do what we
 did in the `Applicative` type class and wrap it in a `Just`.
@@ -338,14 +338,14 @@ what's inside and apply `f` to it.
 
 We can play around with `Maybe` as a monad:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> return "WHAT" :: Maybe String
 Just "WHAT"
 ghci> Just 9 >>= \x -> return (x*10)
 Just 90
 ghci> Nothing >>= \x -> return (x*10)
 Nothing
-~~~~
+```
 
 Nothing new or exciting on the first line since we already used `pure`
 with `Maybe` and we know that `return` is just `pure` with a different name.
@@ -396,10 +396,10 @@ We can represent the pole with a simple pair of integers. The first
 component will signify the number of birds on the left side and the
 second component the number of birds on the right side:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 type Birds = Int
 type Pole = (Birds,Birds)
-~~~~
+```
 
 First we made a type synonym for `Int`, called `Birds`, because we're using
 integers to represent how many birds there are. And then we made a type
@@ -409,33 +409,33 @@ person of Polish descent).
 Next up, how about we make a function that takes a number of birds and
 lands them on one side of the pole. Here are the functions:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 landLeft :: Birds -> Pole -> Pole
 landLeft n (left,right) = (left + n,right)
 
 landRight :: Birds -> Pole -> Pole
 landRight n (left,right) = (left,right + n)
-~~~~
+```
 
 Pretty straightforward stuff. Let's try them out:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> landLeft 2 (0,0)
 (2,0)
 ghci> landRight 1 (1,2)
 (1,3)
 ghci> landRight (-1) (1,2)
 (1,1)
-~~~~
+```
 
 To make birds fly away we just had a negative number of birds land on
 one side. Because landing a bird on the `Pole` returns a `Pole`, we can
 chain applications of `landLeft` and `landRight`:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> landLeft 2 (landRight 1 (landLeft 1 (0,0)))
 (3,1)
-~~~~
+```
 
 When we apply the function `landLeft 1` to `(0,0)` we get `(1,0)`. Then, we
 land a bird on the right side, resulting in `(1,1)`. Finally two birds
@@ -444,29 +444,29 @@ something by first writing the function and then writing its parameter,
 but here it would be better if the pole went first and then the landing
 function. If we make a function like this:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 x -: f = f x
-~~~~
+```
 
 We can apply functions by first writing the parameter and then the
 function:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> 100 -: (*3)
 300
 ghci> True -: not
 False
 ghci> (0,0) -: landLeft 2
 (2,0)
-~~~~
+```
 
 By using this, we can repeatedly land birds on the pole in a more
 readable manner:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> (0,0) -: landLeft 1 -: landRight 1 -: landLeft 2
 (3,1)
-~~~~
+```
 
 Pretty cool! This example is equivalent to the one before where we
 repeatedly landed birds on the pole, only it looks neater. Here, it's
@@ -475,19 +475,19 @@ left, then one on the right and finally two on the left.
 
 So far so good, but what happens if 10 birds land on one side?
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> landLeft 10 (0,3)
 (10,3)
-~~~~
+```
 
 10 birds on the left side and only 3 on the right? That's sure to send
 poor Pierre falling through the air! This is pretty obvious here but
 what if we had a sequence of landings like this:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> (0,0) -: landLeft 1 -: landRight 4 -: landLeft (-1) -: landRight (-2)
 (0,2)
-~~~~
+```
 
 It might seem like everything is okay but if you follow the steps here,
 you'll see that at one time there are 4 birds on the right side and no
@@ -498,7 +498,7 @@ if the balance is okay but fail if the birds land in a lopsided manner.
 And what better way to add a context of failure to value than by using
 `Maybe`! Let's rework these functions:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 landLeft :: Birds -> Pole -> Maybe Pole
 landLeft n (left,right)
     | abs ((left + n) - right) < 4 = Just (left + n, right)
@@ -508,7 +508,7 @@ landRight :: Birds -> Pole -> Maybe Pole
 landRight n (left,right)
     | abs (left - (right + n)) < 4 = Just (left, right + n)
     | otherwise                    = Nothing
-~~~~
+```
 
 Instead of returning a `Pole` these functions now return a `Maybe Pole`.
 They still take the number of birds and the old pole as before, but then
@@ -520,12 +520,12 @@ failure.
 
 Let's give these babies a go:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> landLeft 2 (0,0)
 Just (2,0)
 ghci> landLeft 10 (0,3)
 Nothing
-~~~~
+```
 
 Nice! When we land birds without throwing Pierre off balance, we get a
 new pole wrapped in a `Just`. But when many more birds end up on one side
@@ -539,10 +539,10 @@ We need a way of taking a `Maybe Pole` and feeding it to a function that
 takes a `Pole` and returns a `Maybe Pole`. Luckily, we have `>>=`, which
 does just that for `Maybe`. Let's give it a go:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> landRight 1 (0,0) >>= landLeft 2
 Just (2,1)
-~~~~
+```
 
 Remember, `landLeft 2` has a type of `Pole -> Maybe Pole`. We couldn't just
 feed it the `Maybe Pole` that is the result of `landRight 1 (0,0)`, so we
@@ -551,20 +551,20 @@ use `>>=` to take that value with a context and give it to `landLeft 2`.
 context because if we feed a `Nothing` into `landLeft 2`, the result is
 `Nothing` and the failure is propagated:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> Nothing >>= landLeft 2
 Nothing
-~~~~
+```
 
 With this, we can now chain landings that may fail because `>>=` allows
 us to feed a monadic value to a function that takes a normal one.
 
 Here's a sequence of birdy landings:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> return (0,0) >>= landRight 2 >>= landLeft 2 >>= landRight 2
 Just (2,4)
-~~~~
+```
 
 At the beginning, we used `return` to take a pole and wrap it in a `Just`.
 We could have just applied `landRight 2` to `(0,0)`, it would have been the
@@ -576,20 +576,20 @@ on.
 Remember this example from before we introduced failure into Pierre's
 routine:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> (0,0) -: landLeft 1 -: landRight 4 -: landLeft (-1) -: landRight (-2)
 (0,2)
-~~~~
+```
 
 It didn't simulate his interaction with birds very well because in the
 middle there his balance was off but the result didn't reflect that. But
 let's give that a go now by using monadic application (`>>=`) instead of
 normal application:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> return (0,0) >>= landLeft 1 >>= landRight 4 >>= landLeft (-1) >>= landRight (-2)
 Nothing
-~~~~
+```
 
 ![iama banana](img/banana.png)
 
@@ -623,19 +623,19 @@ We may also devise a function that ignores the current number of birds
 on the balancing pole and just makes Pierre slip and fall. We can call
 it `banana`:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 banana :: Pole -> Maybe Pole
 banana _ = Nothing
-~~~~
+```
 
 Now we can chain it together with our bird landings. It will always
 cause our walker to fall, because it ignores whatever's passed to it and
 always returns a failure. Check it:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> return (0,0) >>= landLeft 1 >>= banana >>= landRight 1
 Nothing
-~~~~
+```
 
 The value `Just (1,0)` gets fed to `banana`, but it produces a `Nothing`,
 which causes everything to result in a `Nothing`. How unfortunate!
@@ -644,24 +644,24 @@ Instead of making functions that ignore their input and just return a
 predetermined monadic value, we can use the `>>` function, whose default
 implementation is this:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 (>>) :: (Monad m) => m a -> m b -> m b
 m >> n = m >>= \_ -> n
-~~~~
+```
 
 Normally, passing some value to a function that ignores its parameter
 and always just returns some predetermined value would always result in
 that predetermined value. With monads however, their context and meaning
 has to be considered as well. Here's how `>>` acts with `Maybe`:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> Nothing >> Just 3
 Nothing
 ghci> Just 3 >> Just 4
 Just 4
 ghci> Just 3 >> Nothing
 Nothing
-~~~~
+```
 
 If you replace `>>` with `>>= \_ ->`, it's easy to see why it acts
 like it does.
@@ -669,10 +669,10 @@ like it does.
 We can replace our `banana` function in the chain with a `>>` and then a
 `Nothing`:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> return (0,0) >>= landLeft 1 >> Nothing >>= landRight 1
 Nothing
-~~~~
+```
 
 There we go, guaranteed and obvious failure!
 
@@ -681,7 +681,7 @@ made the clever choice of treating `Maybe` values as values with a failure
 context and feeding them to functions like we did. Here's how a series
 of bird landings would look like:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 routine :: Maybe Pole
 routine = case landLeft 1 (0,0) of
     Nothing -> Nothing
@@ -690,7 +690,7 @@ routine = case landLeft 1 (0,0) of
         Just pole2 -> case landLeft 2 pole2 of
             Nothing -> Nothing
             Just pole3 -> landLeft 1 pole3
-~~~~
+```
 
 ![john joe glanton](img/centaur.png)
 
@@ -728,10 +728,10 @@ together monadic values in sequence. We're going to take a look at how
 
 Consider this familiar example of monadic application:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> Just 3 >>= (\x -> Just (show x ++ "!"))
 Just "3!"
-~~~~
+```
 
 Been there, done that. Feeding a monadic value to a function that
 returns one, no big deal. Notice how when we do this, `x` becomes `3` inside
@@ -739,33 +739,33 @@ the lambda. Once we're inside that lambda, it's just a normal value
 rather than a monadic value. Now, what if we had another `>>=` inside
 that function? Check this out:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> Just 3 >>= (\x -> Just "!" >>= (\y -> Just (show x ++ y)))
 Just "3!"
-~~~~
+```
 
 Ah, a nested use of `>>=`! In the outermost lambda, we feed `Just "!"` to
 the lambda `\y -> Just (show x ++ y)`. Inside this lambda, the `y` becomes
 `"!"`. `x` is still `3` because we got it from the outer lambda. All this sort
 of reminds me of the following expression:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> let x = 3; y = "!" in show x ++ y
 "3!"
-~~~~
+```
 
 The main difference between these two is that the values in the former
 example are monadic. They're values with a failure context. We can
 replace any of them with a failure:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> Nothing >>= (\x -> Just "!" >>= (\y -> Just (show x ++ y)))
 Nothing
 ghci> Just 3 >>= (\x -> Nothing >>= (\y -> Just (show x ++ y)))
 Nothing
 ghci> Just 3 >>= (\x -> Just "!" >>= (\y -> Nothing))
 Nothing
-~~~~
+```
 
 In the first line, feeding a `Nothing` to a function naturally results in
 a `Nothing`. In the second line, we feed `Just 3` to a function and the `x`
@@ -777,23 +777,23 @@ expressions, only that the values in question are monadic values.
 To further illustrate this point, let's write this in a script and have
 each `Maybe` value take up its own line:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 foo :: Maybe String
 foo = Just 3   >>= (\x ->
       Just "!" >>= (\y ->
       Just (show x ++ y)))
-~~~~
+```
 
 To save us from writing all these annoying lambdas, Haskell gives us `do`
 notation. It allows us to write the previous piece of code like this:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 foo :: Maybe String
 foo = do
     x <- Just 3
     y <- Just "!"
     Just (show x ++ y)
-~~~~
+```
 
 ![90s owl](img/owld.png)
 
@@ -818,21 +818,21 @@ possible failure of any of the previous ones.
 
 For instance, examine the following line:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> Just 9 >>= (\x -> Just (x > 8))
 Just True
-~~~~
+```
 
 Because the left parameter of `>>=` is a `Just` value, the lambda is
 applied to `9` and the result is a `Just True`. If we rewrite this in `do`
 notation, we get:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 marySue :: Maybe Bool
 marySue = do
     x <- Just 9
     Just (x > 8)
-~~~~
+```
 
 If we compare these two, it's easy to see why the result of the whole
 monadic value is the result of the last monadic value in the `do`
@@ -846,21 +846,21 @@ each one relied on the previous one and each one had an added context of
 possible failure. Here's two birds landing on the left side, then two
 birds landing on the right and then one bird landing on the left:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 routine :: Maybe Pole
 routine = do
     start <- return (0,0)
     first <- landLeft 2 start
     second <- landRight 2 first
     landLeft 1 second
-~~~~
+```
 
 Let's see if he succeeds:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> routine
 Just (3,2)
-~~~~
+```
 
 He does! Great. When we were doing these routines by explicitly writing
 `>>=`, we usually said something like `return (0,0) >>= landLeft 2`,
@@ -879,7 +879,7 @@ succeeded or failed).
 Again, let's take a look at what this piece of code would look like if
 we hadn't used the monadic aspects of `Maybe`:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 routine :: Maybe Pole
 routine =
     case Just (0,0) of
@@ -889,7 +889,7 @@ routine =
             Just first -> case landRight 2 first of
                 Nothing -> Nothing
                 Just second -> landLeft 1 second
-~~~~
+```
 
 See how in the case of success, the tuple inside `Just (0,0)` becomes
 `start`, the result of `landLeft 2 start` becomes `first`, etc.
@@ -897,7 +897,7 @@ See how in the case of success, the tuple inside `Just (0,0)` becomes
 If we want to throw the Pierre a banana peel in `do` notation, we can do
 the following:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 routine :: Maybe Pole
 routine = do
     start <- return (0,0)
@@ -905,7 +905,7 @@ routine = do
     Nothing
     second <- landRight 2 first
     landLeft 1 second
-~~~~
+```
 
 When we write a line in `do` notation without binding the monadic value
 with `<-`, it's just like putting `>>` after the monadic value whose
@@ -924,12 +924,12 @@ In `do` notation, when we bind monadic values to names, we can utilize
 pattern matching, just like in `let` expressions and function parameters.
 Here's an example of pattern matching in a `do` expression:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 justH :: Maybe Char
 justH = do
     (x:xs) <- Just "hello"
     return x
-~~~~
+```
 
 We use pattern matching to get the first character of the string `"hello"`
 and then we present it as the result. So `justH` evaluates to `Just 'h'`.
@@ -945,38 +945,38 @@ called. It's part of the `Monad` type class and it enables failed pattern
 matching to result in a failure in the context of the current monad
 instead of making our program crash. Its default implementation is this:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 fail :: (Monad m) => String -> m a
 fail msg = error msg
-~~~~
+```
 
 So by default it does make our program crash, but monads that
 incorporate a context of possible failure (like `Maybe`) usually implement
 it on their own. For `Maybe`, its implemented like so:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 fail _ = Nothing
-~~~~
+```
 
 It ignores the error message and makes a `Nothing`. So when pattern
 matching fails in a `Maybe` value that's written in `do` notation, the whole
 value results in a `Nothing`. This is preferable to having our program
 crash. Here's a `do` expression with a pattern that's bound to fail:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 wopwop :: Maybe Char
 wopwop = do
     (x:xs) <- Just ""
     return x
-~~~~
+```
 
 The pattern matching fails, so the effect is the same as if the whole
 line with the pattern was replaced with a `Nothing`. Let's try this out:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> wopwop
 Nothing
-~~~~
+```
 
 The failed pattern matching has caused a failure within the context of
 our monad instead of causing a program-wide failure, which is pretty
@@ -1002,10 +1002,10 @@ value like `[3,8,9]` contains several results, so we can view it as one
 value that is actually many values at the same time. Using lists as
 applicative functors showcases this non-determinism nicely:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> (*) <$> [1,2,3] <*> [10,100,1000]
 [10,100,1000,20,200,2000,30,300,3000]
-~~~~
+```
 
 All the possible combinations of multiplying elements from the left list
 with elements from the right list are included in the resulting list.
@@ -1016,12 +1016,12 @@ non-deterministic value as well, only it has many more results.
 This context of non-determinism translates to monads very nicely. Let's
 go ahead and see what the `Monad` instance for lists looks like:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 instance Monad [] where
     return x = [x]
     xs >>= f = concat (map f xs)
     fail _ = []
-~~~~
+```
 
 `return` does the same thing as `pure`, so we should already be familiar
 with `return` for lists. It takes a value and puts it in a minimal default
@@ -1038,10 +1038,10 @@ produced a normal value instead of one with a context, `>>=` wouldn't be
 so useful because after one use, the context would be lost. Anyway,
 let's try feeding a non-deterministic value to a function:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> [3,4,5] >>= \x -> [x,-x]
 [3,-3,4,-4,5,-5]
-~~~~
+```
 
 When we used `>>=` with `Maybe`, the monadic value was fed into the
 function while taking care of possible failures. Here, it takes care of
@@ -1059,9 +1059,9 @@ To see how this is achieved, we can just follow the implementation.
 First, we start off with the list `[3,4,5]`. Then, we map the lambda over
 it and the result is the following:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 [[3,-3],[4,-4],[5,-5]]
-~~~~
+```
 
 The lambda is applied to every element and we get a list of lists.
 Finally, we just flatten the list and voila! We've applied a
@@ -1072,12 +1072,12 @@ pretty much the equivalent of `Nothing`, because it signifies the absence
 of a result. That's why failing is just defined as the empty list. The
 error message gets thrown away. Let's play around with lists that fail:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> [] >>= \x -> ["bad","mad","rad"]
 []
 ghci> [1,2,3] >>= \x -> []
 []
-~~~~
+```
 
 In the first line, an empty list is fed into the lambda. Because the
 list has no elements, none of them can be passed to the function and so
@@ -1090,10 +1090,10 @@ is a failure.
 Just like with `Maybe` values, we can chain several lists with `>>=`,
 propagating the non-determinism:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> [1,2] >>= \n -> ['a','b'] >>= \ch -> return (n,ch)
 [(1,'a'),(1,'b'),(2,'a'),(2,'b')]
-~~~~
+```
 
 ![concatmap](img/concatmap.png)
 
@@ -1117,13 +1117,13 @@ something as its result.
 
 Here's the previous expression rewritten in `do` notation:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 listOfTuples :: [(Int,Char)]
 listOfTuples = do
     n <- [1,2]
     ch <- ['a','b']
     return (n,ch)
-~~~~
+```
 
 This makes it a bit more obvious that `n` takes on every value from `[1,2]`
 and `ch` takes on every value from `['a','b']`. Just like with `Maybe`, we're
@@ -1134,10 +1134,10 @@ this case is non-determinism.
 Using lists with `do` notation really reminds me of something we've seen
 before. Check out the following piece of code:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> [ (n,ch) | n <- [1,2], ch <- ['a','b'] ]
 [(1,'a'),(1,'b'),(2,'a'),(2,'b')]
-~~~~
+```
 
 Yes! List comprehensions! In our `do` notation example, `n` became every
 result from `[1,2]` and for every such result, `ch` was assigned a result
@@ -1157,10 +1157,10 @@ List comprehensions allow us to filter our output. For instance, we can
 filter a list of numbers to search only for that numbers whose digits
 contain a `7`:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> [ x | x <- [1..50], '7' `elem` show x ]
 [7,17,27,37,47]
-~~~~
+```
 
 We apply `show` to `x` to turn our number into a string and then we check if
 the character `'7'` is part of that string. Pretty clever. To see how
@@ -1169,37 +1169,37 @@ to check out the `guard` function and the `MonadPlus` type class. The
 `MonadPlus` type class is for monads that can also act as monoids. Here's
 its definition:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 class Monad m => MonadPlus m where
     mzero :: m a
     mplus :: m a -> m a -> m a
-~~~~
+```
 
 `mzero` is synonymous to `mempty` from the `Monoid` type class and `mplus`
 corresponds to `mappend`. Because lists are monoids as well as monads,
 they can be made an instance of this type class:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 instance MonadPlus [] where
     mzero = []
     mplus = (++)
-~~~~
+```
 
 For lists `mzero` represents a non-deterministic computation that has no
 results at all — a failed computation. `mplus` joins two non-deterministic
 values into one. The `guard` function is defined like this:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 guard :: (MonadPlus m) => Bool -> m ()
 guard True = return ()
 guard False = mzero
-~~~~
+```
 
 It takes a boolean value and if it's `True`, takes a `()` and puts it in a
 minimal default context that still succeeds. Otherwise, it makes a
 failed monadic value. Here it is in action:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> guard (5 > 2) :: Maybe ()
 Just ()
 ghci> guard (1 > 2) :: Maybe ()
@@ -1208,26 +1208,26 @@ ghci> guard (5 > 2) :: [()]
 [()]
 ghci> guard (1 > 2) :: [()]
 []
-~~~~
+```
 
 Looks interesting, but how is it useful? In the list monad, we use it to
 filter out non-deterministic computations. Observe:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> [1..50] >>= (\x -> guard ('7' `elem` show x) >> return x)
 [7,17,27,37,47]
-~~~~
+```
 
 The result here is the same as the result of our previous list
 comprehension. How does `guard` achieve this? Let's first see how `guard`
 functions in conjunction with `>>`:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> guard (5 > 2) >> return "cool" :: [String]
 ["cool"]
 ghci> guard (1 > 2) >> return "cool" :: [String]
 []
-~~~~
+```
 
 If `guard` succeeds, the result contained within it is an empty tuple. So
 then, we use `>>` to ignore that empty tuple and present something else
@@ -1240,22 +1240,22 @@ the computation to continue.
 
 Here's the previous example rewritten in `do` notation:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 sevensOnly :: [Int]
 sevensOnly = do
     x <- [1..50]
     guard ('7' `elem` show x)
     return x
-~~~~
+```
 
 Had we forgotten to present `x` as the final result by using `return`, the
 resulting list would just be a list of empty tuples. Here's this again
 in the form of a list comprehension:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> [ x | x <- [1..50], '7' `elem` show x ]
 [7,17,27,37,47]
-~~~~
+```
 
 So filtering in list comprehensions is the same as using `guard`.
 
@@ -1273,9 +1273,9 @@ he's in and the second number will determine the row.
 Let's make a type synonym for the knight's current position on the chess
 board:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 type KnightPos = (Int,Int)
-~~~~
+```
 
 So let's say that the knight starts at `(6,2)`. Can he get to `(6,1)` in
 exactly three moves? Let's see. If we start off at `(6,2)` what's the best
@@ -1284,7 +1284,7 @@ non-determinism at our disposal, so instead of picking one move, let's
 just pick all of them at once. Here's a function that takes the knight's
 position and returns all of its next moves:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 moveKnight :: KnightPos -> [KnightPos]
 moveKnight (c,r) = do
     (c',r') <- [(c+2,r-1),(c+2,r+1),(c-2,r-1),(c-2,r+1)
@@ -1292,7 +1292,7 @@ moveKnight (c,r) = do
                ]
     guard (c' `elem` [1..8] && r' `elem` [1..8])
     return (c',r')
-~~~~
+```
 
 The knight can always take one step horizontally or vertically and two
 steps horizontally or vertically but its movement has to be both
@@ -1305,24 +1305,24 @@ This function can also be written without the use of lists as a monad,
 but we did it here just for kicks. Here is the same function done with
 `filter`:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 moveKnight :: KnightPos -> [KnightPos]
 moveKnight (c,r) = filter onBoard
     [(c+2,r-1),(c+2,r+1),(c-2,r-1),(c-2,r+1)
     ,(c+1,r-2),(c+1,r+2),(c-1,r-2),(c-1,r+2)
     ]
     where onBoard (c,r) = c `elem` [1..8] && r `elem` [1..8]
-~~~~
+```
 
 Both of these do the same thing, so pick one that you think looks nicer.
 Let's give it a whirl:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> moveKnight (6,2)
 [(8,1),(8,3),(4,1),(4,3),(7,4),(5,4)]
 ghci> moveKnight (8,1)
 [(6,2),(7,3)]
-~~~~
+```
 
 Works like a charm! We take one position and we just carry out all the
 possible moves at once, so to speak. So now that we have a
@@ -1330,21 +1330,21 @@ non-deterministic next position, we just use `>>=` to feed it to
 `moveKnight`. Here's a function that takes a position and returns all the
 positions that you can reach from it in three moves:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 in3 :: KnightPos -> [KnightPos]
 in3 start = do
     first <- moveKnight start
     second <- moveKnight first
     moveKnight second
-~~~~
+```
 
 If you pass it `(6,2)`, the resulting list is quite big, because if there
 are several ways to reach some position in three moves, it crops up in
 the list several times. The above without `do` notation:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 in3 start = return start >>= moveKnight >>= moveKnight >>= moveKnight
-~~~~
+```
 
 Using `>>=` once gives us all possible moves from the start and then
 when we use `>>=` the second time, for every possible first move, every
@@ -1358,26 +1358,26 @@ style.
 Now, let's make a function that takes two positions and tells us if you
 can get from one to the other in exactly three steps:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 canReachIn3 :: KnightPos -> KnightPos -> Bool
 canReachIn3 start end = end `elem` in3 start
-~~~~
+```
 
 We generate all the possible positions in three steps and then we see if
 the position we're looking for is among them. So let's see if we can get
 from `(6,2)` to `(6,1)` in three moves:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> (6,2) `canReachIn3` (6,1)
 True
-~~~~
+```
 
 Yes! How about from `(6,2)` to `(7,3)`?
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> (6,2) `canReachIn3` (7,3)
 False
-~~~~
+```
 
 No! As an exercise, you can change this function so that when you can
 reach one position from the other, it tells you which moves to take.
@@ -1429,24 +1429,24 @@ such a context, it makes sense that we treat it as a successful
 computation because, well, we know what the value is. Here's some `return`
 usage with `Maybe`:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> return 3 >>= (\x -> Just (x+100000))
 Just 100003
 ghci> (\x -> Just (x+100000)) 3
 Just 100003
-~~~~
+```
 
 For the list monad `return` puts something in a singleton list. The `>>=`
 implementation for lists goes over all the values in the list and
 applies the function to them, but since there's only one value in a
 singleton list, it's the same as applying the function to that value:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> return "WoM" >>= (\x -> [x,x,x])
 ["WoM","WoM","WoM"]
 ghci> (\x -> [x,x,x]) "WoM"
 ["WoM","WoM","WoM"]
-~~~~
+```
 
 We said that for `IO`, using `return` makes an I/O action that has no
 side-effects but just presents a value as its result. So it makes sense
@@ -1469,21 +1469,21 @@ that value as its result. This means that, for instance, for `Maybe`, it
 doesn't introduce any failure and for lists, it doesn't introduce any
 extra non-determinism. Here's a test run for a few monads:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> Just "move on up" >>= (\x -> return x)
 Just "move on up"
 ghci> [1,2,3,4] >>= (\x -> return x)
 [1,2,3,4]
 ghci> putStrLn "Wah!" >>= (\x -> return x)
 Wah!
-~~~~
+```
 
 If we take a closer look at the list example, the implementation for
 `>>=` is:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 xs >>= f = concat (map f xs)
-~~~~
+```
 
 So when we feed `[1,2,3,4]` to `return`, first `return` gets mapped over
 `[1,2,3,4]`, resulting in `[[1],[2],[3],[4]]` and then this gets
@@ -1514,29 +1514,29 @@ Remember when we had our tightrope walker Pierre walk a rope while birds
 landed on his balancing pole? To simulate birds landing on his balancing
 pole, we made a chain of several functions that might produce failure:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> return (0,0) >>= landRight 2 >>= landLeft 2 >>= landRight 2
 Just (2,4)
-~~~~
+```
 
 We started with `Just (0,0)` and then bound that value to the next monadic
 function, `landRight 2`. The result of that was another monadic value
 which got bound into the next monadic function, and so on. If we were to
 explicitly parenthesize this, we'd write:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> ((return (0,0) >>= landRight 2) >>= landLeft 2) >>= landRight 2
 Just (2,4)
-~~~~
+```
 
 But we can also write the routine like this:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 return (0,0) >>= (\x ->
 landRight 2 x >>= (\y ->
 landLeft 2 y >>= (\z ->
 landRight 2 z)))
-~~~~
+```
 
 `return (0,0)` is the same as `Just (0,0)` and when we feed it to the
 lambda, the `x` becomes `(0,0)`. `landRight` takes a number of birds and a
@@ -1550,10 +1550,10 @@ what matters is their meaning. Here's another way to look at this law:
 consider composing two functions, `f` and `g`. Composing two functions is
 implemented like so:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 (.) :: (b -> c) -> (a -> b) -> (a -> c)
 f . g = (\x -> f (g x))
-~~~~
+```
 
 If the type of `g` is `a -> b` and the type of `f` is `b -> c`, we arrange
 them into a new function which has a type of `a -> c`, so that its
@@ -1565,20 +1565,20 @@ accepts a normal `b`, not a monadic one. We could however, use `>>=` to
 make that happen. So by using `>>=`, we can compose two monadic
 functions:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 (<=<) :: (Monad m) => (b -> m c) -> (a -> m b) -> (a -> m c)
 f <=< g = (\x -> g x >>= f)
-~~~~
+```
 
 So now we can compose two monadic functions:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> let f x = [x,-x]
 ghci> let g x = [x*3,x*2]
 ghci> let h = f <=< g
 ghci> h 3
 [9,-9,6,-6]
-~~~~
+```
 
 Cool. So what does that have to do with the associativity law? Well,
 when we look at the law as a law of compositions, it states that

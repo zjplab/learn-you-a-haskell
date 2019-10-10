@@ -58,7 +58,7 @@ list is the head if the head is bigger than the maximum of the tail. If
 the maximum of the tail is bigger, well, then it's the maximum of the
 tail. That's it! Now let's implement that in Haskell.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 maximum' :: (Ord a) => [a] -> a
 maximum' [] = error "maximum of empty list"
 maximum' [x] = x
@@ -66,7 +66,7 @@ maximum' (x:xs)
     | x > maxTail = x
     | otherwise = maxTail
     where maxTail = maximum' xs
-~~~~
+```
 
 As you can see, pattern matching goes great with recursion! Most
 imperative languages don't have pattern matching so you have to make a
@@ -101,12 +101,12 @@ An even clearer way to write this function is to use `max`. If you
 remember, `max` is a function that takes two numbers and returns the
 bigger of them. Here's how we could rewrite `maximum'` by using `max`:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 maximum' :: (Ord a) => [a] -> a
 maximum' [] = error "maximum of empty list"
 maximum' [x] = x
 maximum' (x:xs) = max x (maximum' xs)
-~~~~
+```
 
 How's that for elegant! In essence, the maximum of a list is the max of
 the first element and the maximum of the tail.
@@ -125,12 +125,12 @@ the edge condition is 0 or less. If we try to replicate something zero
 times, it should return an empty list. Also for negative numbers,
 because it doesn't really make sense.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 replicate' :: (Num i, Ord i) => i -> a -> [a]
 replicate' n x
     | n <= 0    = []
     | otherwise = x:replicate' (n-1) x
-~~~~
+```
 
 We used guards here instead of patterns because we're testing for a
 boolean condition. If `n` is less than or equal to 0, return an empty
@@ -150,13 +150,13 @@ if we try to take anything from an empty list, we get an empty list.
 Notice that those are two edge conditions right there. So let's write
 that out:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 take' :: (Num i, Ord i) => i -> [a] -> [a]
 take' n _
     | n <= 0   = []
 take' _ []     = []
 take' n (x:xs) = x : take' (n-1) xs
-~~~~
+```
 
 ![painter](img/painter.png)
 
@@ -179,11 +179,11 @@ empty list itself. O-kay. What about the rest of it? Well, you could say
 that if we split a list to a head and a tail, the reversed list is equal
 to the reversed tail and then the head at the end.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 reverse' :: [a] -> [a]
 reverse' [] = []
 reverse' (x:xs) = reverse' xs ++ [x]
-~~~~
+```
 
 There we go!
 
@@ -195,10 +195,10 @@ though is that we can cut them where we want. `repeat` takes an element
 and returns an infinite list that just has that element. A recursive
 implementation of that is really easy, watch.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 repeat' :: a -> [a]
 repeat' x = x:repeat' x
-~~~~
+```
 
 Calling `repeat 3` will give us a list that starts with `3` and then has an
 infinite amount of 3's as a tail. So calling `repeat 3` would evaluate
@@ -214,12 +214,12 @@ Well, we get an empty list back then. So there's our edge condition.
 However, `zip` takes two lists as parameters, so there are actually two
 edge conditions.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 zip' :: [a] -> [b] -> [(a,b)]
 zip' _ [] = []
 zip' [] _ = []
 zip' (x:xs) (y:ys) = (x,y):zip' xs ys
-~~~~
+```
 
 First two patterns say that if the first list or second list is empty,
 we get an empty list. The third one says that two lists zipped are equal
@@ -234,13 +234,13 @@ condition, as is most of the times with lists, is the empty list. We
 know that an empty list contains no elements, so it certainly doesn't
 have the droids we're looking for.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 elem' :: (Eq a) => a -> [a] -> Bool
 elem' a [] = False
 elem' a (x:xs)
     | a == x    = True
     | otherwise = a `elem'` xs
-~~~~
+```
 
 Pretty simple and expected. If the head isn't the element then we check
 the tail. If we reach an empty list, the result is `False`.
@@ -276,23 +276,23 @@ we going to filter the list so that we get only the elements smaller
 than the head of our list and only elements that are bigger? List
 comprehensions. So, let's dive in and define this function.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 quicksort :: (Ord a) => [a] -> [a]
 quicksort [] = []
 quicksort (x:xs) =
     let smallerSorted = quicksort [a | a <- xs, a <= x]
         biggerSorted = quicksort [a | a <- xs, a > x]
     in  smallerSorted ++ [x] ++ biggerSorted
-~~~~
+```
 
 Let's give it a small test run to see if it appears to behave correctly.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> quicksort [10,2,5,3,1,6,7,4,2,3,4,8,9]
 [1,2,2,3,3,4,4,5,6,7,8,9,10]
 ghci> quicksort "the quick brown fox jumps over the lazy dog"
 "        abcdeeefghhijklmnoooopqrrsttuuvwxyz"
-~~~~
+```
 
 Booyah! That's what I'm talking about! So if we have, say
 `[5,1,9,4,6,7,3]` and we want to sort it, this algorithm will first take

@@ -36,12 +36,12 @@ Let's import the `Data.List` module, which has a bunch of useful functions
 for working with lists and use a function that it exports to create a
 function that tells us how many unique elements a list has.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 import Data.List
 
 numUniques :: (Eq a) => [a] -> Int
 numUniques = length . nub
-~~~~
+```
 
 When you do `import Data.List`, all the functions that `Data.List` exports
 become available in the global namespace, meaning that you can call them
@@ -54,17 +54,17 @@ You can also put the functions of modules into the global namespace when
 using GHCI. If you're in GHCI and you want to be able to call the
 functions exported by `Data.List`, do this:
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> :m + Data.List
-~~~~
+```
 
 If we want to load up the names from several modules inside GHCI, we
 don't have to do `:m +` several times, we can just load up several modules
 at once.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> :m + Data.List Data.Map Data.Set
-~~~~
+```
 
 However, if you've loaded a script that already imports a module, you
 don't need to use :m + to get access to it.
@@ -73,9 +73,9 @@ If you just need a couple of functions from a module, you can
 selectively import just those functions. If we wanted to import only the
 `nub` and `sort` functions from `Data.List`, we'd do this:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 import Data.List (nub, sort)
-~~~~
+```
 
 You can also choose to import all of the functions of a module except a
 few select ones. That's often useful when several modules export
@@ -83,9 +83,9 @@ functions with the same name and you want to get rid of the offending
 ones. Say we already have our own function that's called `nub` and we want
 to import all the functions from `Data.List` except the `nub` function:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 import Data.List hiding (nub)
-~~~~
+```
 
 Another way of dealing with name clashes is to do qualified imports. The
 `Data.Map` module, which offers a data structure for looking up values by
@@ -94,9 +94,9 @@ functions, like `filter` or `null`. So when we import `Data.Map` and then call
 `filter`, Haskell won't know which function to use. Here's how we solve
 this:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 import qualified Data.Map
-~~~~
+```
 
 This makes it so that if we want to reference `Data.Map`'s `filter`
 function, we have to do `Data.Map.filter`, whereas just `filter` still
@@ -104,9 +104,9 @@ refers to the normal `filter` we all know and love. But typing out
 `Data.Map` in front of every function from that module is kind of tedious.
 That's why we can rename the qualified import to something shorter:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 import qualified Data.Map as M
-~~~~
+```
 
 Now, to reference `Data.Map`'s `filter` function, we just use `M.filter`.
 
@@ -141,42 +141,42 @@ met before.
 `intersperse` takes an element and a list and then puts that element in
 between each pair of elements in the list. Here's a demonstration:
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> intersperse '.' "MONKEY"
 "M.O.N.K.E.Y"
 ghci> intersperse 0 [1,2,3,4,5,6]
 [1,0,2,0,3,0,4,0,5,0,6]
-~~~~
+```
 
 `intercalate` takes a list of lists and a list. It then inserts that list
 in between all those lists and then flattens the result.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> intercalate " " ["hey","there","guys"]
 "hey there guys"
 ghci> intercalate [0,0,0] [[1,2,3],[4,5,6],[7,8,9]]
 [1,2,3,0,0,0,4,5,6,0,0,0,7,8,9]
-~~~~
+```
 
 `transpose` transposes a list of lists. If you look at a list of lists as
 a 2D matrix, the columns become the rows and vice versa.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> transpose [[1,2,3],[4,5,6],[7,8,9]]
 [[1,4,7],[2,5,8],[3,6,9]]
 ghci> transpose ["hey","there","guys"]
 ["htg","ehu","yey","rs","e"]
-~~~~
+```
 
 Say we have the polynomials *3x^2^ + 5x + 9*, *10x^3^ + 9* and *8x^3^ +
 5x^2^ + x - 1* and we want to add them together. We can use the lists
 `[0,3,5,9]`, `[10,0,0,9]` and `[8,5,1,-1]` to represent them in Haskell. Now,
 to add them, all we have to do is this:
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> map sum $ transpose [[0,3,5,9],[10,0,0,9],[8,5,1,-1]]
 [18,8,6,17]
-~~~~
+```
 
 When we transpose these three lists, the third powers are then in the
 first row, the second powers in the second one and so on. Mapping `sum` to
@@ -199,12 +199,12 @@ switching to their strict versions.
 
 `concat` flattens a list of lists into just a list of elements.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> concat ["foo","bar","car"]
 "foobarcar"
 ghci> concat [[3,4,5],[2,3,4],[2,1,1]]
 [3,4,5,2,3,4,2,1,1]
-~~~~
+```
 
 It will just remove one level of nesting. So if you want to completely
 flatten `[[[2,3],[3,4,5],[2]],[[2,3],[3,4]]]`, which is a list of lists of
@@ -213,36 +213,36 @@ lists, you have to concatenate it twice.
 Doing `concatMap` is the same as first mapping a function to a list and
 then concatenating the list with `concat`.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> concatMap (replicate 4) [1..3]
 [1,1,1,1,2,2,2,2,3,3,3,3]
-~~~~
+```
 
 `and` takes a list of boolean values and returns `True` only if all the
 values in the list are `True`.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> and $ map (>4) [5,6,7,8]
 True
 ghci> and $ map (==4) [4,4,4,3,4]
 False
-~~~~
+```
 
 `or` is like `and`, only it returns `True` if any of the boolean values in a
 list is `True`.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> or $ map (==4) [2,3,4,5,6,1]
 True
 ghci> or $ map (>4) [1,2,3]
 False
-~~~~
+```
 
 `any` and `all` take a predicate and then check if any or all the elements
 in a list satisfy the predicate, respectively. Usually we use these two
 functions instead of mapping over a list and then doing `and` or `or`.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> any (==4) [2,3,5,6,1,4]
 True
 ghci> all (>4) [6,9,10]
@@ -251,24 +251,24 @@ ghci> all (`elem` ['A'..'Z']) "HEYGUYSwhatsup"
 False
 ghci> any (`elem` ['A'..'Z']) "HEYGUYSwhatsup"
 True
-~~~~
+```
 
 `iterate` takes a function and a starting value. It applies the function
 to the starting value, then it applies that function to the result, then
 it applies the function to that result again, etc. It returns all the
 results in the form of an infinite list.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> take 10 $ iterate (*2) 1
 [1,2,4,8,16,32,64,128,256,512]
 ghci> take 3 $ iterate (++ "haha") "haha"
 ["haha","hahahaha","hahahahahaha"]
-~~~~
+```
 
 `splitAt` takes a number and a list. It then splits the list at that many
 elements, returning the resulting two lists in a tuple.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> splitAt 3 "heyman"
 ("hey","man")
 ghci> splitAt 100 "heyman"
@@ -277,19 +277,19 @@ ghci> splitAt (-3) "heyman"
 ("","heyman")
 ghci> let (a,b) = splitAt 3 "foobar" in b ++ a
 "barfoo"
-~~~~
+```
 
 `takeWhile` is a really useful little function. It takes elements from a
 list while the predicate holds and then when an element is encountered
 that doesn't satisfy the predicate, it's cut off. It turns out this is
 very useful.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> takeWhile (>3) [6,5,4,3,2,1,2,3,4,5,4,3,2,1]
 [6,5,4]
 ghci> takeWhile (/=' ') "This is a sentence"
 "This"
-~~~~
+```
 
 Say we wanted to know the sum of all third powers that are under 10,000.
 We can't map `(^3)` to `[1..]`, apply a filter and then try to sum that up
@@ -297,10 +297,10 @@ because filtering an infinite list never finishes. You may know that all
 the elements here are ascending but Haskell doesn't. That's why we can
 do this:
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> sum $ takeWhile (<10000) $ map (^3) [1..]
 53361
-~~~~
+```
 
 We apply `(^3)` to an infinite list and then once an element that's over
 10,000 is encountered, the list is cut off. Now we can sum it up easily.
@@ -309,12 +309,12 @@ We apply `(^3)` to an infinite list and then once an element that's over
 is true. Once predicate equates to `False`, it returns the rest of the
 list. An extremely useful and lovely function!
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> dropWhile (/=' ') "This is a sentence"
 " is a sentence"
 ghci> dropWhile (<3) [1,2,2,2,3,4,5,4,3,2,1]
 [3,4,5,4,3,2,1]
-~~~~
+```
 
 We're given a list that represents the value of a stock by date. The
 list is made of tuples whose first component is the stock value, the
@@ -322,32 +322,32 @@ second is the year, the third is the month and the fourth is the date.
 We want to know when the stock value first exceeded one thousand
 dollars!
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> let stock = [(994.4,2008,9,1),(995.2,2008,9,2),(999.2,2008,9,3),(1001.4,2008,9,4),(998.3,2008,9,5)]
 ghci> head (dropWhile (\(val,y,m,d) -> val < 1000) stock)
 (1001.4,2008,9,4)
-~~~~
+```
 
 `span` is kind of like `takeWhile`, only it returns a pair of lists. The
 first list contains everything the resulting list from `takeWhile` would
 contain if it were called with the same predicate and the same list. The
 second list contains the part of the list that would have been dropped.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> let (fw, rest) = span (/=' ') "This is a sentence" in "First word:" ++ fw ++ ", the rest:" ++ rest
 "First word: This, the rest: is a sentence"
-~~~~
+```
 
 Whereas `span` spans the list while the predicate is true, `break` breaks it
 when the predicate is first true. Doing `break p` is the equivalent of
 doing `span (not . p)`.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> break (==4) [1,2,3,4,5,6,7]
 ([1,2,3],[4,5,6,7])
 ghci> span (/=4) [1,2,3,4,5,6,7]
 ([1,2,3],[4,5,6,7])
-~~~~
+```
 
 When using `break`, the second list in the result will start with the
 first element that satisfies the predicate.
@@ -356,49 +356,49 @@ first element that satisfies the predicate.
 part of the `Ord` typeclass, because if the elements of a list can't be
 put in some kind of order, then the list can't be sorted.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> sort [8,5,3,2,1,6,4,2]
 [1,2,2,3,4,5,6,8]
 ghci> sort "This will be sorted soon"
 "    Tbdeehiillnooorssstw"
-~~~~
+```
 
 `group` takes a list and groups adjacent elements into sublists if they
 are equal.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> group [1,1,1,1,2,2,2,2,3,3,2,2,2,5,6,7]
 [[1,1,1,1],[2,2,2,2],[3,3],[2,2,2],[5],[6],[7]]
-~~~~
+```
 
 If we sort a list before grouping it, we can find out how many times
 each element appears in the list.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> map (\l@(x:xs) -> (x,length l)) . group . sort $ [1,1,1,1,2,2,2,2,3,3,2,2,2,5,6,7]
 [(1,4),(2,7),(3,2),(5,1),(6,1),(7,1)]
-~~~~
+```
 
 `inits` and `tails` are like `init` and `tail`, only they recursively apply that
 to a list until there's nothing left. Observe.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> inits "w00t"
 ["","w","w0","w00","w00t"]
 ghci> tails "w00t"
 ["w00t","00t","0t","t",""]
 ghci> let w = "w00t" in zip (inits w) (tails w)
 [("","w00t"),("w","00t"),("w0","0t"),("w00","t"),("w00t","")]
-~~~~
+```
 
 Let's use a fold to implement searching a list for a sublist.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 search :: (Eq a) => [a] -> [a] -> Bool
 search needle haystack =
     let nlen = length needle
     in  foldl (\acc x -> if take nlen x == needle then True else acc) False (tails haystack)
-~~~~
+```
 
 First we call `tails` with the list in which we're searching. Then we go
 over each tail and see if it starts with what we're looking for.
@@ -407,19 +407,19 @@ With that, we actually just made a function that behaves like `isInfixOf`.
 `isInfixOf` searches for a sublist within a list and returns `True` if the
 sublist we're looking for is somewhere inside the target list.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> "cat" `isInfixOf` "im a cat burglar"
 True
 ghci> "Cat" `isInfixOf` "im a cat burglar"
 False
 ghci> "cats" `isInfixOf` "im a cat burglar"
 False
-~~~~
+```
 
 `isPrefixOf` and `isSuffixOf` search for a sublist at the beginning and at
 the end of a list, respectively.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> "hey" `isPrefixOf` "hey there!"
 True
 ghci> "hey" `isPrefixOf` "oh hey there!"
@@ -428,7 +428,7 @@ ghci> "there!" `isSuffixOf` "oh hey there!"
 True
 ghci> "there!" `isSuffixOf` "oh hey there"
 False
-~~~~
+```
 
 `elem` and `notElem` check if an element is or isn't inside a list.
 
@@ -436,19 +436,19 @@ False
 first list in the result contains all the elements that satisfy the
 predicate, the second contains all the ones that don't.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> partition (`elem` ['A'..'Z']) "BOBsidneyMORGANeddy"
 ("BOBMORGAN","sidneyeddy")
 ghci> partition (>3) [1,3,5,6,3,2,1,0,3,7]
 ([5,6,7],[1,3,3,2,1,0,3])
-~~~~
+```
 
 It's important to understand how this is different from `span` and `break`:
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> span (`elem` ['A'..'Z']) "BOBsidneyMORGANeddy"
 ("BOB","sidneyMORGANeddy")
-~~~~
+```
 
 While `span` and `break` are done once they encounter the first element that
 doesn't and does satisfy the predicate, `partition` goes through the whole
@@ -464,14 +464,14 @@ elements or a single element. And like the type of a list of, say,
 integers is `[Int]`, the type of maybe having an integer is `Maybe Int`.
 Anyway, let's take our `find` function for a spin.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> find (>4) [1,2,3,4,5,6]
 Just 5
 ghci> find (>9) [1,2,3,4,5,6]
 Nothing
 ghci> :t find
 find :: (a -> Bool) -> [a] -> Maybe a
-~~~~
+```
 
 Notice the type of `find`. Its result is `Maybe a`. That's kind of like
 having the type of `[a]`, only a value of the type `Maybe` can contain
@@ -494,14 +494,14 @@ there was a valid answer in that list, we'd get, say,
 It maybe returns the index of the element we're looking for. If that
 element isn't in our list, it returns a `Nothing`.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> :t elemIndex
 elemIndex :: (Eq a) => a -> [a] -> Maybe Int
 ghci> 4 `elemIndex` [1,2,3,4,5,6]
 Just 3
 ghci> 10 `elemIndex` [1,2,3,4,5,6]
 Nothing
-~~~~
+```
 
 `elemIndices` is like `elemIndex`, only it returns a list of indices, in
 case the element we're looking for crops up in our list several times.
@@ -509,23 +509,23 @@ Because we're using a list to represent the indices, we don't need a
 `Maybe` type, because failure can be represented as the empty list, which
 is very much synonymous to `Nothing`.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> ' ' `elemIndices` "Where are the spaces?"
 [5,9,13]
-~~~~
+```
 
 `findIndex` is like find, but it maybe returns the index of the first
 element that satisfies the predicate. `findIndices` returns the indices of
 all elements that satisfy the predicate in the form of a list.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> findIndex (==4) [5,3,2,1,6,4]
 Just 5
 ghci> findIndex (==7) [5,3,2,1,6,4]
 Nothing
 ghci> findIndices (`elem` ['A'..'Z']) "Where Are The Caps?"
 [0,6,10,14]
-~~~~
+```
 
 We already covered `zip` and `zipWith`. We noted that they zip together two
 lists, either in a tuple or with a binary function (meaning such a
@@ -538,12 +538,12 @@ want to zip 8 lists together. There's also a very clever way for zipping
 infinite numbers of lists, but we're not advanced enough to cover that
 just yet.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> zipWith3 (\x y z -> x + y + z) [1,2,3] [4,5,2,2] [2,2,3]
 [7,9,8]
 ghci> zip4 [2,3,3] [2,2,2] [5,5,3] [2,2,2]
 [(2,2,5,2),(3,2,5,2),(3,2,3,2)]
-~~~~
+```
 
 Just like with normal zipping, lists that are longer than the shortest
 list that's being zipped are cut down to size.
@@ -552,10 +552,10 @@ list that's being zipped are cut down to size.
 somewhere. It takes a string and returns every line of that string in a
 separate list.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> lines "first line\nsecond line\nthird line"
 ["first line","second line","third line"]
-~~~~
+```
 
 `'\n'` is the character for a unix newline. Backslashes have special
 meaning in Haskell strings and characters.
@@ -563,22 +563,22 @@ meaning in Haskell strings and characters.
 `unlines` is the inverse function of `lines`. It takes a list of strings and
 joins them together using a `'\n'`.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> unlines ["first line", "second line", "third line"]
 "first line\nsecond line\nthird line\n"
-~~~~
+```
 
 `words` and `unwords` are for splitting a line of text into words or joining
 a list of words into a text. Very useful.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> words "hey these are the words in this sentence"
 ["hey","these","are","the","words","in","this","sentence"]
 ghci> words "hey these           are    the words in this\nsentence"
 ["hey","these","are","the","words","in","this","sentence"]
 ghci> unwords ["hey","there","mate"]
 "hey there mate"
-~~~~
+```
 
 We've already mentioned `nub`. It takes a list and weeds out the duplicate
 elements, returning a list whose every element is a unique snowflake!
@@ -586,35 +586,35 @@ The function does have a kind of strange name. It turns out that "nub"
 means a small lump or essential part of something. In my opinion, they
 should use real words for function names instead of old-people words.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> nub [1,2,3,4,3,2,1,2,3,4,3,2,1]
 [1,2,3,4]
 ghci> nub "Lots of words and stuff"
 "Lots fwrdanu"
-~~~~
+```
 
 `delete` takes an element and a list and deletes the first occurrence of
 that element in the list.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> delete 'h' "hey there ghang!"
 "ey there ghang!"
 ghci> delete 'h' . delete 'h' $ "hey there ghang!"
 "ey tere ghang!"
 ghci> delete 'h' . delete 'h' . delete 'h' $ "hey there ghang!"
 "ey tere gang!"
-~~~~
+```
 
 `\\` is the list difference function. It acts like a set difference,
 basically. For every element in the right-hand list, it removes a
 matching element in the left one.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> [1..10] \\ [2,5,9]
 [1,3,4,6,7,8,10]
 ghci> "Im a big baby" \\ "big"
 "Im a  baby"
-~~~~
+```
 
 Doing `[1..10] \\ [2,5,9]` is like doing
 `delete 2 . delete 5 . delete 9 $ [1..10]`.
@@ -624,20 +624,20 @@ lists. It pretty much goes over every element in the second list and
 appends it to the first one if it isn't already in yet. Watch out
 though, duplicates are removed from the second list!
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> "hey man" `union` "man what's up"
 "hey manwt'sup"
 ghci> [1..7] `union` [5..10]
 [1,2,3,4,5,6,7,8,9,10]
-~~~~
+```
 
 `intersect` works like set intersection. It returns only the elements that
 are found in both lists.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> [1..7] `intersect` [5..10]
 [5,6,7]
-~~~~
+```
 
 `insert` takes an element and a list of elements that can be sorted and
 inserts it into the last position where it's still less than or equal to
@@ -646,12 +646,12 @@ the list and then keep going until it finds an element that's equal to
 or greater than the element that we're inserting and it will insert it
 just before the element.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> insert 4 [3,5,1,2,8,2]
 [3,4,5,1,2,8,2]
 ghci> insert 4 [1,3,4,4,1]
 [1,3,4,4,4,1]
-~~~~
+```
 
 The `4` is inserted right after the `3` and before the `5` in the first
 example and in between the `3` and `4` in the second example.
@@ -659,14 +659,14 @@ example and in between the `3` and `4` in the second example.
 If we use `insert` to insert into a sorted list, the resulting list will
 be kept sorted.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> insert 4 [1,2,3,5,6,7]
 [1,2,3,4,5,6,7]
 ghci> insert 'g' $ ['a'..'f'] ++ ['h'..'z']
 "abcdefghijklmnopqrstuvwxyz"
 ghci> insert 3 [1,2,4,3,2,1]
 [1,2,3,4,3,2,1]
-~~~~
+```
 
 What `length`, `take`, `drop`, `splitAt`, `!!` and `replicate` have in common is
 that they take an `Int` as one of their parameters (or return an `Int`),
@@ -701,11 +701,11 @@ where `groupBy` comes in! The equality function supplied to the *By*
 functions should take two elements of the same type and return `True` if
 it considers them equal by its standards.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> let values = [-4.3, -2.4, -1.2, 0.4, 2.3, 5.9, 10.5, 29.1, 5.3, -2.4, -14.5, 2.9, 2.3]
 ghci> groupBy (\x y -> (x > 0) == (y > 0)) values
 [[-4.3,-2.4,-1.2],[0.4,2.3,5.9,10.5,29.1,5.3],[-2.4,-14.5],[2.9,2.3]]
-~~~~
+```
 
 From this, we clearly see which sections are positive and which are
 negative. The equality function supplied takes two elements and then
@@ -716,19 +716,19 @@ readable. An even clearer way to write equality functions for the *By*
 functions is if you import the `on` function from Data.Function. `on` is
 defined like this:
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 on :: (b -> b -> c) -> (a -> b) -> a -> a -> c
 f `on` g = \x y -> f (g x) (g y)
-~~~~
+```
 
 So doing ``(==) `on` (> 0)`` returns an equality function that looks like
 `\x y -> (x > 0) == (y > 0)`. `on` is used a lot with the *By* functions
 because with it, we can do:
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> groupBy ((==) `on` (> 0)) values
 [[-4.3,-2.4,-1.2],[0.4,2.3,5.9,10.5,29.1,5.3],[-2.4,-14.5],[2.9,2.3]]
-~~~~
+```
 
 Very readable indeed! You can read it out loud: Group this by equality
 on whether the elements are greater than zero.
@@ -749,11 +749,11 @@ lexicographically. What if we have a list of lists and we want to sort
 it not based on the inner lists' contents but on their lengths? Well, as
 you've probably guessed, we'll use the `sortBy` function.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> let xs = [[5,4,5,4,4],[1,2,3],[3,5,4,3],[],[2],[2,2]]
 ghci> sortBy (compare `on` length) xs
 [[],[2],[2,2],[1,2,3],[3,5,4,3],[5,4,5,4,4]]
-~~~~
+```
 
 Awesome! ``compare `on` length`` ... man, that reads almost like real
 English! If you're not sure how exactly the `on` works here,
@@ -831,34 +831,34 @@ username can only be comprised of alphanumeric characters. We can use
 the `Data.List` function `all` in combination with the `Data.Char` predicates
 to determine if the username is alright.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> all isAlphaNum "bobby283"
 True
 ghci> all isAlphaNum "eddy the fish!"
 False
-~~~~
+```
 
 Kewl. In case you don't remember, `all` takes a predicate and a list and
 returns `True` only if that predicate holds for every element in the list.
 
 We can also use `isSpace` to simulate the `Data.List` function `words`.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> words "hey guys its me"
 ["hey","guys","its","me"]
 ghci> groupBy ((==) `on` isSpace) "hey guys its me"
 ["hey"," ","guys"," ","its"," ","me"]
 ghci>
-~~~~
+```
 
 Hmmm, well, it kind of does what `words` does but we're left with elements
 of only spaces. Hmm, whatever shall we do? I know, let's filter that
 sucker.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> filter (not . any isSpace) . groupBy ((==) `on` isSpace) $ "hey guys its me"
 ["hey","guys","its","me"]
-~~~~
+```
 
 Ah.
 
@@ -873,7 +873,7 @@ is `generalCategory`. It has a type of
 There are about 31 categories so we won't list them all
 here, but let's play around with the function.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> generalCategory ' '
 Space
 ghci> generalCategory 'A'
@@ -886,7 +886,7 @@ ghci> generalCategory '9'
 DecimalNumber
 ghci> map generalCategory " \t\nA9?|"
 [Space,Control,Control,UppercaseLetter,DecimalNumber,OtherPunctuation,MathSymbol]
-~~~~
+```
 
 Since the `GeneralCategory` type is part of the `Eq` typeclass, we can also
 test for stuff like `generalCategory c == Space`.
@@ -902,34 +902,34 @@ title-case is the same as upper-case.
 `digitToInt` converts a character to an `Int`.
 To succeed, the character must be in the ranges '0'..'9', 'a'..'f' or 'A'..'F'.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> map digitToInt "34538"
 [3,4,5,3,8]
 ghci> map digitToInt "FF85AB"
 [15,15,8,5,10,11]
-~~~~
+```
 
 `intToDigit` is the inverse function of `digitToInt`. It takes an `Int` in the
 range of `0..15` and converts it to a lower-case character.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> intToDigit 15
 'f'
 ghci> intToDigit 5
 '5'
-~~~~
+```
 
 The `ord` and `chr` functions convert characters to their corresponding
 numbers and vice versa:
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> ord 'a'
 97
 ghci> chr 97
 'a'
 ghci> map ord "abcdefgh"
 [97,98,99,100,101,102,103,104]
-~~~~
+```
 
 The difference between the `ord` values of two characters is equal to how
 far apart they are in the Unicode table.
@@ -939,13 +939,13 @@ each character in them by a fixed number of positions in the alphabet.
 We can easily create a sort of Caesar cipher of our own, only we won't
 constrict ourselves to the alphabet.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 encode :: Int -> String -> String
 encode shift msg =
     let ords = map ord msg
         shifted = map (+ shift) ords
     in  map chr shifted
-~~~~
+```
 
 Here, we first convert the string to a list of numbers. Then we add the
 shift amount to each number before converting the list of numbers back
@@ -953,7 +953,7 @@ to characters. If you're a composition cowboy, you could write the body
 of this function as `map (chr . (+ shift) . ord) msg`. Let's try encoding
 a few messages.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> encode 3 "Heeeeey"
 "Khhhhh|"
 ghci> encode 4 "Heeeeey"
@@ -962,24 +962,24 @@ ghci> encode 1 "abcd"
 "bcde"
 ghci> encode 5 "Marry Christmas! Ho ho ho!"
 "Rfww~%Hmwnxyrfx&%Mt%mt%mt&"
-~~~~
+```
 
 That's encoded alright. Decoding a message is basically just shifting it
 back by the number of places it was shifted by in the first place.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 decode :: Int -> String -> String
 decode shift msg = encode (negate shift) msg
-~~~~
+```
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> encode 3 "Im a little teapot"
 "Lp#d#olwwoh#whdsrw"
 ghci> decode 3 "Lp#d#olwwoh#whdsrw"
 "Im a little teapot"
 ghci> decode 5 . encode 5 $ "This is a sentence"
 "This is a sentence"
-~~~~
+```
 
 Data.Map
 --------
@@ -996,7 +996,7 @@ by having a list of pairs. The first component in the pair would be the
 key, the second component the value. Here's an example of an association
 list with phone numbers:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 phoneBook =
     [("betty","555-2938")
     ,("bonnie","452-2928")
@@ -1005,17 +1005,17 @@ phoneBook =
     ,("wendy","939-8282")
     ,("penny","853-2492")
     ]
-~~~~
+```
 
 Despite this seemingly odd indentation, this is just a list of pairs of
 strings. The most common task when dealing with association lists is
 looking up some value by key. Let's make a function that looks up some
 value given a key.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 findKey :: (Eq k) => k -> [(k,v)] -> v
 findKey key xs = snd . head . filter (\(k,v) -> key == k) $ xs
-~~~~
+```
 
 Pretty simple. The function that takes a key and a list, filters the
 list so that only matching keys remain, gets the first key-value that
@@ -1027,13 +1027,13 @@ programs so easy to crash, so let's use the `Maybe` data type. If we don't
 find the key, we'll return a `Nothing`. If we find it, we'll return
 `Just something`, where something is the value corresponding to that key.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 findKey :: (Eq k) => k -> [(k,v)] -> Maybe v
 findKey key [] = Nothing
 findKey key ((k,v):xs) = if key == k
                             then Just v
                             else findKey key xs
-~~~~
+```
 
 Look at the type declaration. It takes a key that can be equated, an
 association list and then it maybe produces a value. Sounds about right.
@@ -1043,10 +1043,10 @@ case, splitting a list into a head and a tail, recursive calls, they're
 all there. This is the classic fold pattern, so let's see how this would
 be implemented as a fold.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 findKey :: (Eq k) => k -> [(k,v)] -> Maybe v
 findKey key = foldr (\(k,v) acc -> if key == k then Just v else acc) Nothing
-~~~~
+```
 
 > *Note:* It's usually better to use folds for this standard list
 > recursion pattern instead of explicitly writing the recursion because
@@ -1054,14 +1054,14 @@ findKey key = foldr (\(k,v) acc -> if key == k then Just v else acc) Nothing
 > they see the `foldr` call, but it takes some more thinking to read
 > explicit recursion.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> findKey "penny" phoneBook
 Just "853-2492"
 ghci> findKey "betty" phoneBook
 Just "555-2938"
 ghci> findKey "wilma" phoneBook
 Nothing
-~~~~
+```
 
 ![legomap](img/legomap.png)
 
@@ -1079,9 +1079,9 @@ lists.
 Because `Data.Map` exports functions that clash with the `Prelude` and
 `Data.List` ones, we'll do a qualified import.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 import qualified Data.Map as Map
-~~~~
+```
 
 Put this import statement into a script and then load the script via
 GHCI.
@@ -1092,19 +1092,19 @@ basic rundown of its functions.
 The `fromList` function takes an association list (in the form of a list)
 and returns a map with the same associations.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> Map.fromList [("betty","555-2938"),("bonnie","452-2928"),("lucille","205-2928")]
 fromList [("betty","555-2938"),("bonnie","452-2928"),("lucille","205-2928")]
 ghci> Map.fromList [(1,2),(3,4),(3,2),(5,5)]
 fromList [(1,2),(3,2),(5,5)]
-~~~~
+```
 
 If there are duplicate keys in the original association list, the
 duplicates are just discarded. This is the type signature of `fromList`
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 Map.fromList :: (Ord k) => [(k, v)] -> Map.Map k v
-~~~~
+```
 
 It says that it takes a list of pairs of type `k` and `v` and returns a map
 that maps from keys of type `k` to type `v`. Notice that when we were doing
@@ -1119,15 +1119,15 @@ have keys that aren't part of the `Ord` typeclass.
 `empty` represents an empty map. It takes no arguments, it just returns an
 empty map.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> Map.empty
 fromList []
-~~~~
+```
 
 `insert` takes a key, a value and a map and returns a new map that's just
 like the old one, only with the key and value inserted.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> Map.empty
 fromList []
 ghci> Map.insert 3 100 Map.empty
@@ -1136,15 +1136,15 @@ ghci> Map.insert 5 600 (Map.insert 4 200 ( Map.insert 3 100  Map.empty))
 fromList [(3,100),(4,200),(5,600)]
 ghci> Map.insert 5 600 . Map.insert 4 200 . Map.insert 3 100 $ Map.empty
 fromList [(3,100),(4,200),(5,600)]
-~~~~
+```
 
 We can implement our own `fromList` by using the empty map, `insert` and a
 fold. Watch:
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 fromList' :: (Ord k) => [(k,v)] -> Map.Map k v
 fromList' = foldr (\(k,v) acc -> Map.insert k v acc) Map.empty
-~~~~
+```
 
 It's a pretty straightforward fold. We start of with an empty map and we
 fold it up from the right, inserting the key value pairs into the
@@ -1152,31 +1152,31 @@ accumulator as we go along.
 
 `null` checks if a map is empty.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> Map.null Map.empty
 True
 ghci> Map.null $ Map.fromList [(2,3),(5,5)]
 False
-~~~~
+```
 
 `size` reports the size of a map.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> Map.size Map.empty
 0
 ghci> Map.size $ Map.fromList [(2,4),(3,3),(4,2),(5,4),(6,4)]
 5
-~~~~
+```
 
 `singleton` takes a key and a value and creates a map that has exactly one
 mapping.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> Map.singleton 3 9
 fromList [(3,9)]
 ghci> Map.insert 5 9 $ Map.singleton 3 9
 fromList [(3,9),(5,9)]
-~~~~
+```
 
 `lookup` works like the `Data.List` `lookup`, only it operates on maps. It
 returns `Just something` if it finds something for the key and `Nothing` if
@@ -1185,28 +1185,28 @@ it doesn't.
 `member` is a predicate takes a key and a map and reports whether the key
 is in the map or not.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> Map.member 3 $ Map.fromList [(3,6),(4,3),(6,9)]
 True
 ghci> Map.member 3 $ Map.fromList [(2,5),(4,5)]
 False
-~~~~
+```
 
 `map` and `filter` work much like their list equivalents.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> Map.map (*100) $ Map.fromList [(1,1),(2,4),(3,9)]
 fromList [(1,100),(2,400),(3,900)]
 ghci> Map.filter isUpper $ Map.fromList [(1,'a'),(2,'A'),(3,'b'),(4,'B')]
 fromList [(2,'A'),(4,'B')]
-~~~~
+```
 
 `toList` is the inverse of `fromList`.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> Map.toList . Map.insert 9 2 $ Map.singleton 4 3
 [(4,3),(9,2)]
-~~~~
+```
 
 `keys` and `elems` return lists of keys and values respectively. `keys` is the
 equivalent of map fst . Map.toList and elems is the equivalent of map
@@ -1217,7 +1217,7 @@ doesn't discard duplicate keys but it uses a function supplied to it to
 decide what to do with them. Let's say that a girl can have several
 numbers and we have an association list set up like this.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 phoneBook =
     [("betty","555-2938")
     ,("betty","342-2492")
@@ -1230,64 +1230,64 @@ phoneBook =
     ,("penny","853-2492")
     ,("penny","555-2111")
     ]
-~~~~
+```
 
 Now if we just use `fromList` to put that into a map, we'll lose a few
 numbers! So here's what we'll do:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 phoneBookToMap :: (Ord k) => [(k, String)] -> Map.Map k String
 phoneBookToMap xs = Map.fromListWith (\number1 number2 -> number1 ++ ", " ++ number2) xs
-~~~~
+```
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> Map.lookup "patsy" $ phoneBookToMap phoneBook
 "827-9162, 943-2929, 493-2928"
 ghci> Map.lookup "wendy" $ phoneBookToMap phoneBook
 "939-8282"
 ghci> Map.lookup "betty" $ phoneBookToMap phoneBook
 "342-2492, 555-2938"
-~~~~
+```
 
 If a duplicate key is found, the function we pass is used to combine the
 values of those keys into some other value. We could also first make all
 the values in the association list singleton lists and then we can use
 `++` to combine the numbers.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 phoneBookToMap :: (Ord k) => [(k, a)] -> Map.Map k [a]
 phoneBookToMap xs = Map.fromListWith (++) $ map (\(k,v) -> (k,[v])) xs
-~~~~
+```
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> Map.lookup "patsy" $ phoneBookToMap phoneBook
 ["827-9162","943-2929","493-2928"]
-~~~~
+```
 
 Pretty neat! Another use case is if we're making a map from an
 association list of numbers and when a duplicate key is found, we want
 the biggest value for the key to be kept.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> Map.fromListWith max [(2,3),(2,5),(2,100),(3,29),(3,22),(3,11),(4,22),(4,15)]
 fromList [(2,100),(3,29),(4,22)]
-~~~~
+```
 
 Or we could choose to add together values on the same keys.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> Map.fromListWith (+) [(2,3),(2,5),(2,100),(3,29),(3,22),(3,11),(4,22),(4,15)]
 fromList [(2,108),(3,62),(4,37)]
-~~~~
+```
 
 `insertWith` is to `insert` what `fromListWith` is to `fromList`. It inserts a
 key-value pair into a map, but if that map already contains the key, it
 uses the function passed to it to determine what to do.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> Map.insertWith (+) 3 100 $ Map.fromList [(3,4),(5,103),(6,339)]
 fromList [(3,104),(5,103),(6,339)]
-~~~~
+```
 
 These were just a few functions from `Data.Map`. You can see a complete
 list of functions in the
@@ -1312,63 +1312,63 @@ names, we do a qualified import.
 
 Put this import statement in a script:
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 import qualified Data.Set as Set
-~~~~
+```
 
 And then load the script via GHCI.
 
 Let's say we have two pieces of text. We want to find out which
 characters were used in both of them.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 text1 = "I just had an anime dream. Anime... Reality... Are they so different?"
 text2 = "The old man left his garbage can out and now his trash is all over my lawn!"
-~~~~
+```
 
 The `fromList` function works much like you would expect. It takes a list
 and converts it into a set.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> let set1 = Set.fromList text1
 ghci> let set2 = Set.fromList text2
 ghci> set1
 fromList " .?AIRadefhijlmnorstuy"
 ghci> set2
 fromList " !Tabcdefghilmnorstuvwy"
-~~~~
+```
 
 As you can see, the items are ordered and each element is unique. Now
 let's use the `intersection` function to see which elements they both
 share.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> Set.intersection set1 set2
 fromList " adefhilmnorstuy"
-~~~~
+```
 
 We can use the `difference` function to see which letters are in the first
 set but aren't in the second one and vice versa.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> Set.difference set1 set2
 fromList ".?AIRj"
 ghci> Set.difference set2 set1
 fromList "!Tbcgvw"
-~~~~
+```
 
 Or we can see all the unique letters used in both sentences by using
 `union`.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> Set.union set1 set2
 fromList " !.?AIRTabcdefghijlmnorstuvwy"
-~~~~
+```
 
 The `null`, `size`, `member`, `empty`, `singleton`, `insert` and `delete` functions
 all work like you'd expect them to.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> Set.null Set.empty
 True
 ghci> Set.null $ Set.fromList [3,4,5,5,4,3]
@@ -1383,14 +1383,14 @@ ghci> Set.insert 8 $ Set.fromList [5..10]
 fromList [5,6,7,8,9,10]
 ghci> Set.delete 4 $ Set.fromList [3,4,5,4,3,4,5]
 fromList [3,5]
-~~~~
+```
 
 We can also check for subsets or proper subset. Set A is a subset of set
 B if B contains all the elements that A does. Set A is a proper subset
 of set B if B contains all the elements that A does but has more
 elements.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> Set.fromList [2,3,4] `Set.isSubsetOf` Set.fromList [1,2,3,4,5]
 True
 ghci> Set.fromList [1,2,3,4,5] `Set.isSubsetOf` Set.fromList [1,2,3,4,5]
@@ -1399,16 +1399,16 @@ ghci> Set.fromList [1,2,3,4,5] `Set.isProperSubsetOf` Set.fromList [1,2,3,4,5]
 False
 ghci> Set.fromList [2,3,4,8] `Set.isSubsetOf` Set.fromList [1,2,3,4,5]
 False
-~~~~
+```
 
 We can also `map` over sets and `filter` them.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> Set.filter odd $ Set.fromList [3,4,5,6,7,2,3,4]
 fromList [3,5,7]
 ghci> Set.map (+1) $ Set.fromList [3,4,5,6,7,2,3,4]
 fromList [3,4,5,6,7,8]
-~~~~
+```
 
 Sets are often used to weed a list of duplicates from a list by first
 making it into a set with `fromList` and then converting it back to a list
@@ -1419,13 +1419,13 @@ only requires the type of the list's elements to be part of the `Eq`
 typeclass, whereas if you want to cram elements into a set, the type of
 the list has to be in `Ord`.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> let setNub xs = Set.toList $ Set.fromList xs
 ghci> setNub "HEY WHATS CRACKALACKIN"
 " ACEHIKLNRSTWY"
 ghci> nub "HEY WHATS CRACKALACKIN"
 "HEY WATSCRKLIN"
-~~~~
+```
 
 `setNub` is generally faster than `nub` on big lists but as you can see, `nub`
 preserves the ordering of the list's elements, while `setNub` does not.
@@ -1456,7 +1456,7 @@ file called `Geometry.hs`, then we should name our module `Geometry`. Then,
 we specify the functions that it exports and after that, we can start
 writing the functions. So we'll start with this.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 module Geometry
 ( sphereVolume
 , sphereArea
@@ -1465,12 +1465,12 @@ module Geometry
 , cuboidArea
 , cuboidVolume
 ) where
-~~~~
+```
 
 As you can see, we'll be doing areas and volumes for spheres, cubes and
 cuboids. Let's go ahead and define our functions then:
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 module Geometry
 ( sphereVolume
 , sphereArea
@@ -1500,7 +1500,7 @@ cuboidArea a b c = rectangleArea a b * 2 + rectangleArea a c * 2 + rectangleArea
 
 rectangleArea :: Float -> Float -> Float
 rectangleArea a b = a * b
-~~~~
+```
 
 Pretty standard geometry right here. There are a few things to take note
 of though. Because a cube is only a special case of a cuboid, we defined
@@ -1523,9 +1523,9 @@ because we weren't exporting them in the first place.
 
 To use our module, we just do:
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 import Geometry
-~~~~
+```
 
 `Geometry.hs` has to be in the same folder that the program that's
 importing it is in, though.
@@ -1541,7 +1541,7 @@ the files will contain:
 
 `Sphere.hs`
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 module Geometry.Sphere
 ( volume
 , area
@@ -1552,11 +1552,11 @@ volume radius = (4.0 / 3.0) * pi * (radius ^ 3)
 
 area :: Float -> Float
 area radius = 4 * pi * (radius ^ 2)
-~~~~
+```
 
 `Cuboid.hs`
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 module Geometry.Cuboid
 ( volume
 , area
@@ -1570,11 +1570,11 @@ area a b c = rectangleArea a b * 2 + rectangleArea a c * 2 + rectangleArea c b *
 
 rectangleArea :: Float -> Float -> Float
 rectangleArea a b = a * b
-~~~~
+```
 
 `Cube.hs`
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 module Geometry.Cube
 ( volume
 , area
@@ -1587,7 +1587,7 @@ volume side = Cuboid.volume side side side
 
 area :: Float -> Float
 area side = Cuboid.area side side side
-~~~~
+```
 
 Alright! So first is `Geometry.Sphere`. Notice how we placed it in a
 folder called `Geometry` and then defined the module name as
@@ -1601,20 +1601,20 @@ this because they're separate modules. We want to use functions from
 So now if we're in a file that's on the same level as the `Geometry`
 folder, we can do, say:
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 import Geometry.Sphere
-~~~~
+```
 
 And then we can call `area` and `volume` and they'll give us the area and
 volume for a sphere. And if we want to juggle two or more of these
 modules, we have to do qualified imports because they export functions
 with the same names. So we just do something like:
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 import qualified Geometry.Sphere as Sphere
 import qualified Geometry.Cuboid as Cuboid
 import qualified Geometry.Cube as Cube
-~~~~
+```
 
 And then we can call `Sphere.area`, `Sphere.volume`, `Cuboid.area`, etc. and
 each will calculate the area or volume for their corresponding object.

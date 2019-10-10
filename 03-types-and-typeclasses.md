@@ -30,7 +30,7 @@ Now we'll use GHCI to examine the types of some expressions. We'll do
 that by using the `:t` command which, followed by any valid expression,
 tells us its type. Let's give it a whirl.
 
-~~~~ {.haskell: .ghci name="code"}
+```haskell
 ghci> :t 'a'
 'a' :: Char
 ghci> :t True
@@ -41,7 +41,7 @@ ghci> :t (True, 'a')
 (True, 'a') :: (Bool, Char)
 ghci> :t 4 == 5
 4 == 5 :: Bool
-~~~~
+```
 
 ![bomb](img/bomb.png) Here we see that doing `:t`
 on an expression prints out the expression followed by `::` and its type.
@@ -64,10 +64,10 @@ Remember the list comprehension we made previously that filters a string
 so that only caps remain? Here's how it looks like with a type
 declaration.
 
-~~~~ {.haskell: .hs name="code"}
+```haskell
 removeNonUppercase :: [Char] -> [Char]
 removeNonUppercase st = [ c | c <- st, c `elem` ['A'..'Z']]
-~~~~
+```
 
 `removeNonUppercase` has a type of `[Char] -> [Char]`, meaning that it maps
 from a string to a string. That's because it takes one string as a
@@ -80,10 +80,10 @@ string but we did anyway. But how do we write out the type of a function
 that takes several parameters? Here's a simple function that takes three
 integers and adds them together:
 
-~~~~ {.haskell: .hs name="code"}
+```haskell
 addThree :: Int -> Int -> Int -> Int
 addThree x y z = x + y + z
-~~~~
+```
 
 The parameters are separated with `->` and there's no special distinction
 between the parameters and the return type. The return type is the last
@@ -108,39 +108,39 @@ maximum value. Usually on 32-bit machines the maximum possible `Int` is
 not bounded so it can be used to represent really really big numbers. I
 mean like really big. `Int`, however, is more efficient.
 
-~~~~ {.haskell: .hs name="code"}
+```haskell
 factorial :: Integer -> Integer
 factorial n = product [1..n]
-~~~~
+```
 
-~~~~ {.haskell: .ghci name="code"}
+```haskell
 ghci> factorial 50
 30414093201713378043612608166064768844377641568960512000000000000
-~~~~
+```
 
 `Float` is a real floating point with single precision.
 
-~~~~ {.haskell: .hs name="code"}
+```haskell
 circumference :: Float -> Float
 circumference r = 2 * pi * r
-~~~~
+```
 
-~~~~ {.haskell: .ghci name="code"}
+```haskell
 ghci> circumference 4.0
 25.132742
-~~~~
+```
 
 `Double` is a real floating point with double the precision!
 
-~~~~ {.haskell: .hs name="code"}
+```haskell
 circumference' :: Double -> Double
 circumference' r = 2 * pi * r
-~~~~
+```
 
-~~~~ {.haskell: .ghci name="code"}
+```haskell
 ghci> circumference' 4.0
 25.132741228718345
-~~~~
+```
 
 `Bool` is a boolean type. It can have only two values: `True` and `False`.
 
@@ -159,10 +159,10 @@ What do you think is the type of the `head` function? Because `head` takes a
 list of any type and returns the first element, so what could it be?
 Let's check!
 
-~~~~ {.haskell: .ghci name="code"}
+```haskell
 ghci> :t head
 head :: [a] -> a
-~~~~
+```
 
 ![box](img/box.png) Hmmm! What is this `a`? Is it
 a type? Remember that we previously stated that types are written in
@@ -181,10 +181,10 @@ usually give them names of a, b, c, d …
 Remember `fst`? It returns the first component of a pair. Let's examine
 its type.
 
-~~~~ {.haskell: .ghci name="code"}
+```haskell
 ghci> :t fst
 fst :: (a, b) -> a
-~~~~
+```
 
 We see that `fst` takes a tuple which contains two types and returns an
 element which is of the same type as the pair's first component. That's
@@ -209,10 +209,10 @@ of as Java interfaces, only better.
 
 What's the type signature of the `==` function?
 
-~~~~ {.haskell: .ghci name="code"}
+```haskell
 ghci> :t (==)
 (==) :: (Eq a) => a -> a -> Bool
-~~~~
+```
 
 > *Note*: the equality operator, `==` is a function. So are `+`, `*`, `-`, `/` and
 > pretty much all operators. If a function is comprised only of special
@@ -244,7 +244,7 @@ for a type variable in a function, it uses `==` or `/=` somewhere inside its
 definition. All the types we mentioned previously except for functions
 are part of `Eq`, so they can be tested for equality.
 
-~~~~ {.haskell: .ghci name="code"}
+```haskell
 ghci> 5 == 5
 True
 ghci> 5 /= 5
@@ -255,14 +255,14 @@ ghci> "Ho Ho" == "Ho Ho"
 True
 ghci> 3.432 == 3.432
 True
-~~~~
+```
 
 `Ord` is for types that have an ordering.
 
-~~~~ {.haskell: .ghci name="code"}
+```haskell
 ghci> :t (>)
 (>) :: (Ord a) => a -> a -> Bool
-~~~~
+```
 
 All the types we covered so far except for functions are part of `Ord`.
 `Ord` covers all the standard comparing functions such as `>`, `<`, `>=` and
@@ -273,7 +273,7 @@ meaning *greater than*, *lesser than* and *equal*, respectively.
 To be a member of `Ord`, a type must first have membership in the
 prestigious and exclusive `Eq` club.
 
-~~~~ {.haskell: .ghci name="code"}
+```haskell
 ghci> "Abrakadabra" < "Zebra"
 True
 ghci> "Abrakadabra" `compare` "Zebra"
@@ -282,26 +282,26 @@ ghci> 5 >= 2
 True
 ghci> 5 `compare` 3
 GT
-~~~~
+```
 
 Members of `Show` can be presented as strings. All types covered so far
 except for functions are a part of `Show`. The most used function that
 deals with the `Show` typeclass is show. It takes a value whose type is a
 member of `Show` and presents it to us as a string.
 
-~~~~ {.haskell: .ghci name="code"}
+```haskell
 ghci> show 3
 "3"
 ghci> show 5.334
 "5.334"
 ghci> show True
 "True"
-~~~~
+```
 
 `Read` is sort of the opposite typeclass of `Show`. The `read` function takes
 a string and returns a type which is a member of `Read`.
 
-~~~~ {.haskell: .ghci name="code"}
+```haskell
 ghci> read "True" || False
 True
 ghci> read "8.2" + 3.8
@@ -310,18 +310,18 @@ ghci> read "5" - 2
 3
 ghci> read "[1,2,3,4]" ++ [3]
 [1,2,3,4,3]
-~~~~
+```
 
 So far so good. Again, all types covered so far are in this typeclass.
 But what happens if we try to do just `read "4"`?
 
-~~~~ {.haskell: .ghci name="code"}
+```haskell
 ghci> read "4"
 <interactive>:1:0:
     Ambiguous type variable `a' in the constraint:
       `Read a' arising from a use of `read' at <interactive>:1:0-7
     Probable fix: add a type signature that fixes these type variable(s)
-~~~~
+```
 
 What GHCI is telling us here is that it doesn't know what we want in
 return. Notice that in the previous uses of `read` we did something with
@@ -331,10 +331,10 @@ return a `Bool`. But now, it knows we want some type that is part of the
 `Read` class, it just doesn't know which one. Let's take a look at the
 type signature of `read`.
 
-~~~~ {.haskell: .ghci name="code"}
+```haskell
 ghci> :t read
 read :: (Read a) => String -> a
-~~~~
+```
 
 See? It returns a type that's part of `Read` but if we don't try to use it
 in some way later, it has no way of knowing which type. That's why we
@@ -343,7 +343,7 @@ explicitly saying what the type of an expression should be. We do that
 by adding `::` at the end of the expression and then specifying a type.
 Observe:
 
-~~~~ {.haskell: .ghci name="code"}
+```haskell
 ghci> read "5" :: Int
 5
 ghci> read "5" :: Float
@@ -354,7 +354,7 @@ ghci> read "[1,2,3,4]" :: [Int]
 [1,2,3,4]
 ghci> read "(3, 'a')" :: (Int, Char)
 (3, 'a')
-~~~~
+```
 
 Most expressions are such that the compiler can infer what their type is
 by itself. But sometimes, the compiler doesn't know whether to return a
@@ -371,7 +371,7 @@ list ranges. They also have defined successors and predecessors, which
 you can get with the `succ` and `pred` functions. Types in this class: `()`,
 `Bool`, `Char`, `Ordering`, `Int`, `Integer`, `Float` and `Double`.
 
-~~~~ {.haskell: .ghci name="code"}
+```haskell
 ghci> ['a'..'e']
 "abcde"
 ghci> [LT .. GT]
@@ -380,11 +380,11 @@ ghci> [3 .. 5]
 [3,4,5]
 ghci> succ 'B'
 'C'
-~~~~
+```
 
 `Bounded` members have an upper and a lower bound.
 
-~~~~ {.haskell: .ghci name="code"}
+```haskell
 ghci> minBound :: Int
 -2147483648
 ghci> maxBound :: Char
@@ -393,30 +393,30 @@ ghci> maxBound :: Bool
 True
 ghci> minBound :: Bool
 False
-~~~~
+```
 
 `minBound` and `maxBound` are interesting because they have a type of
 `(Bounded a) => a`. In a sense they are polymorphic constants.
 
 All tuples are also part of `Bounded` if the components are also in it.
 
-~~~~ {.haskell: .ghci name="code"}
+```haskell
 ghci> maxBound :: (Bool, Int, Char)
 (True,2147483647,'\1114111')
-~~~~
+```
 
 `Num` is a numeric typeclass. Its members have the property of being able
 to act like numbers. Let's examine the type of a number.
 
-~~~~ {.haskell: .ghci name="code"}
+```haskell
 ghci> :t 20
 20 :: (Num t) => t
-~~~~
+```
 
 It appears that whole numbers are also polymorphic constants. They can
 act like any type that's a member of the `Num` typeclass.
 
-~~~~ {.haskell: .ghci name="code"}
+```haskell
 ghci> 20 :: Int
 20
 ghci> 20 :: Integer
@@ -425,15 +425,15 @@ ghci> 20 :: Float
 20.0
 ghci> 20 :: Double
 20.0
-~~~~
+```
 
 Those are types that are in the `Num` typeclass. If we examine the type of
 `*`, we'll see that it accepts all numbers.
 
-~~~~ {.haskell: .ghci name="code"}
+```haskell
 ghci> :t (*)
 (*) :: (Num a) => a -> a -> a
-~~~~
+```
 
 It takes two numbers of the same type and returns a number of that type.
 That's why `(5 :: Int) * (6 :: Integer)` will result in a type error

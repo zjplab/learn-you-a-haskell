@@ -18,11 +18,11 @@ readable. You can pattern match on any data type — numbers, characters,
 lists, tuples, etc. Let's make a really trivial function that checks if
 the number we supplied to it is a seven or not.
 
-~~~~ {.haskell: .hs name="code"}
+```haskell
 lucky :: (Integral a) => a -> String
 lucky 7 = "LUCKY NUMBER SEVEN!"
 lucky x = "Sorry, you're out of luck, pal!"
-~~~~
+```
 
 When you call `lucky`, the patterns will be checked from top to bottom and
 when it conforms to a pattern, the corresponding function body will be
@@ -34,7 +34,7 @@ that says the numbers from 1 to 5 and says `"Not between 1 and 5"` for any
 other number? Without pattern matching, we'd have to make a pretty
 convoluted if then else tree. However, with it:
 
-~~~~ {.haskell: .hs name="code"}
+```haskell
 sayMe :: (Integral a) => a -> String
 sayMe 1 = "One!"
 sayMe 2 = "Two!"
@@ -42,7 +42,7 @@ sayMe 3 = "Three!"
 sayMe 4 = "Four!"
 sayMe 5 = "Five!"
 sayMe x = "Not between 1 and 5"
-~~~~
+```
 
 Note that if we moved the last pattern (the catch-all one) to the top,
 it would always say `"Not between 1 and 5"`, because it would catch all
@@ -57,11 +57,11 @@ state that the factorial of any positive integer is that integer
 multiplied by the factorial of its predecessor. Here's how that looks
 like translated in Haskell terms.
 
-~~~~ {.haskell: .hs name="code"}
+```haskell
 factorial :: (Integral a) => a -> a
 factorial 0 = 1
 factorial n = n * factorial (n - 1)
-~~~~
+```
 
 This is the first time we've defined a function recursively. Recursion
 is important in Haskell and we'll take a closer look at it later. But in
@@ -81,24 +81,24 @@ more general ones later.
 
 Pattern matching can also fail. If we define a function like this:
 
-~~~~ {.haskell: .hs name="code"}
+```haskell
 charName :: Char -> String
 charName 'a' = "Albert"
 charName 'b' = "Broseph"
 charName 'c' = "Cecil"
-~~~~
+```
 
 and then try to call it with an input that we didn't expect, this is
 what happens:
 
-~~~~ {.haskell: .ghci name="code"}
+```haskell
 ghci> charName 'a'
 "Albert"
 ghci> charName 'b'
 "Broseph"
 ghci> charName 'h'
 "*** Exception: tut.hs:(53,0)-(55,21): Non-exhaustive patterns in function charName
-~~~~
+```
 
 It complains that we have non-exhaustive patterns, and rightfully so.
 When making patterns, we should always include a catch-all pattern so
@@ -110,18 +110,18 @@ pairs) and adds them together? To add together two vectors, we add their
 x components separately and then their y components separately. Here's
 how we would have done it if we didn't know about pattern matching:
 
-~~~~ {.haskell: .hs name="code"}
+```haskell
 addVectors :: (Num a) => (a, a) -> (a, a) -> (a, a)
 addVectors a b = (fst a + fst b, snd a + snd b)
-~~~~
+```
 
 Well, that works, but there's a better way to do it. Let's modify the
 function so that it uses pattern matching.
 
-~~~~ {.haskell: .hs name="code"}
+```haskell
 addVectors :: (Num a) => (a, a) -> (a, a) -> (a, a)
 addVectors (x1, y1) (x2, y2) = (x1 + x2, y1 + y2)
-~~~~
+```
 
 There we go! Much better. Note that this is already a catch-all pattern.
 The type of `addVectors` (in both cases) is
@@ -133,7 +133,7 @@ parameters.
 Well, there are no provided functions that do that but we can make our
 own.
 
-~~~~ {.haskell: .hs name="code"}
+```haskell
 first :: (a, b, c) -> a
 first (x, _, _) = x
 
@@ -142,7 +142,7 @@ second (_, y, _) = y
 
 third :: (a, b, c) -> c
 third (_, _, z) = z
-~~~~
+```
 
 The `_` means the same thing as it does in list comprehensions. It means
 that we really don't care what that part is, so we just write a `_`.
@@ -150,11 +150,11 @@ that we really don't care what that part is, so we just write a `_`.
 Which reminds me, you can also pattern match in list comprehensions.
 Check this out:
 
-~~~~ {.haskell: .ghci name="code"}
+```haskell
 ghci> let xs = [(1,3), (4,3), (2,4), (5,3), (5,6), (3,1)]
 ghci> [a+b | (a,b) <- xs]
 [4,7,6,8,11,4]
-~~~~
+```
 
 Should a pattern match fail, it will just move on to the next element.
 
@@ -177,20 +177,20 @@ more.
 Now that we know how to pattern match against list, let's make our own
 implementation of the `head` function.
 
-~~~~ {.haskell: .hs name="code"}
+```haskell
 head' :: [a] -> a
 head' [] = error "Can't call head on an empty list, dummy!"
 head' (x:_) = x
-~~~~
+```
 
 Checking if it works:
 
-~~~~ {.haskell: .ghci name="code"}
+```haskell
 ghci> head' [4,5,6]
 4
 ghci> head' "Hello"
 'H'
-~~~~
+```
 
 Nice! Notice that if you want to bind to several variables (even if one
 of them is just `_` and doesn't actually bind at all), we have to
@@ -203,13 +203,13 @@ empty list doesn't make sense.
 Let's make a trivial function that tells us some of the first elements
 of the list in (in)convenient English form.
 
-~~~~ {.haskell: .hs name="code"}
+```haskell
 tell :: (Show a) => [a] -> String
 tell [] = "The list is empty"
 tell (x:[]) = "The list has one element: " ++ show x
 tell (x:y:[]) = "The list has two elements: " ++ show x ++ " and " ++ show y
 tell (x:y:_) = "This list is long. The first two elements are: " ++ show x ++ " and " ++ show y
-~~~~
+```
 
 This function is safe because it takes care of the empty list, a
 singleton list, a list with two elements and a list with more than two
@@ -221,11 +221,11 @@ of length 2 or more.
 We already implemented our own `length` function using list comprehension.
 Now we'll do it by using pattern matching and a little recursion:
 
-~~~~ {.haskell: .hs name="code"}
+```haskell
 length' :: (Num b) => [a] -> b
 length' [] = 0
 length' (_:xs) = 1 + length' xs
-~~~~
+```
 
 This is similar to the factorial function we wrote earlier. First we
 defined the result of a known input — the empty list. This is also known
@@ -251,11 +251,11 @@ write that down as a pattern. And we also know that the sum of a list is
 the head plus the sum of the rest of the list. So if we write that down,
 we get:
 
-~~~~ {.haskell:nogutter:nocontrols:hs name="code"}
+```haskell
 sum' :: (Num a) => [a] -> a
 sum' [] = 0
 sum' (x:xs) = x + sum' xs
-~~~~
+```
 
 There's also a thing called *as patterns*. Those are a handy way of
 breaking something up according to a pattern and binding it to names
@@ -266,16 +266,16 @@ but you can easily get the whole list via `xs` instead of repeating
 yourself by typing out `x:y:ys` in the function body again. Here's a quick
 and dirty example:
 
-~~~~ {.haskell:nogutter:nocontrols:hs name="code"}
+```haskell
 capital :: String -> String
 capital "" = "Empty string, whoops!"
 capital all@(x:xs) = "The first letter of " ++ all ++ " is " ++ [x]
-~~~~
+```
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> capital "Dracula"
 "The first letter of Dracula is D"
-~~~~
+```
 
 Normally we use as patterns to avoid repeating ourselves when matching
 against a bigger pattern when we have to use the whole thing again in
@@ -311,14 +311,14 @@ is less than 18.5, you're considered underweight. If it's anywhere from
 more than 30 is obese. So here's the function (we won't be calculating
 it right now, this function just gets a BMI and tells you off)
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 bmiTell :: (RealFloat a) => a -> String
 bmiTell bmi
     | bmi <= 18.5 = "You're underweight, you emo, you!"
     | bmi <= 25.0 = "You're supposedly normal. Pffft, I bet you're ugly!"
     | bmi <= 30.0 = "You're fat! Lose some weight, fatty!"
     | otherwise   = "You're a whale, congratulations!"
-~~~~
+```
 
 Guards are indicated by pipes that follow a function's name and its
 parameters. Usually, they're indented a bit to the right and lined up. A
@@ -350,21 +350,21 @@ as we want. Instead of having the user calculate his own BMI before
 calling the function, let's modify this function so that it takes a
 height and weight and calculates it for us.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 bmiTell :: (RealFloat a) => a -> a -> String
 bmiTell weight height
     | weight / height ^ 2 <= 18.5 = "You're underweight, you emo, you!"
     | weight / height ^ 2 <= 25.0 = "You're supposedly normal. Pffft, I bet you're ugly!"
     | weight / height ^ 2 <= 30.0 = "You're fat! Lose some weight, fatty!"
     | otherwise                 = "You're a whale, congratulations!"
-~~~~
+```
 
 Let's see if I'm fat ...
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> bmiTell 85 1.90
 "You're supposedly normal. Pffft, I bet you're ugly!"
-~~~~
+```
 
 Yay! I'm not fat! But Haskell just called me ugly. Whatever!
 
@@ -376,37 +376,37 @@ Another very simple example: let's implement our own `max` function. If
 you remember, it takes two things that can be compared and returns the
 larger of them.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 max' :: (Ord a) => a -> a -> a
 max' a b
     | a > b     = a
     | otherwise = b
-~~~~
+```
 
 Guards can also be written inline, although I'd advise against that
 because it's less readable, even for very short functions. But to
 demonstrate, we could write `max'` like this:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 max' :: (Ord a) => a -> a -> a
 max' a b | a > b = a | otherwise = b
-~~~~
+```
 
 Ugh! Not very readable at all! Moving on: let's implement our own
 `compare` by using guards.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 myCompare :: (Ord a) => a -> a -> Ordering
 a `myCompare` b
     | a > b     = GT
     | a == b    = EQ
     | otherwise = LT
-~~~~
+```
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 ghci> 3 `myCompare` 2
 GT
-~~~~
+```
 
 > *Note:* Not only can we call functions as infix with backticks, we can
 > also define them using backticks. Sometimes it's easier to read that
@@ -418,14 +418,14 @@ Where!?
 In the previous section, we defined a BMI calculator function and
 berator like this:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 bmiTell :: (RealFloat a) => a -> a -> String
 bmiTell weight height
     | weight / height ^ 2 <= 18.5 = "You're underweight, you emo, you!"
     | weight / height ^ 2 <= 25.0 = "You're supposedly normal. Pffft, I bet you're ugly!"
     | weight / height ^ 2 <= 30.0 = "You're fat! Lose some weight, fatty!"
     | otherwise                   = "You're a whale, congratulations!"
-~~~~
+```
 
 Notice that we repeat ourselves here three times. We repeat ourselves
 three times. Repeating yourself (three times) while programming is about
@@ -434,7 +434,7 @@ expression three times, it would be ideal if we could calculate it once,
 bind it to a name and then use that name instead of the expression.
 Well, we can modify our function like this:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 bmiTell :: (RealFloat a) => a -> a -> String
 bmiTell weight height
     | bmi <= 18.5 = "You're underweight, you emo, you!"
@@ -442,7 +442,7 @@ bmiTell weight height
     | bmi <= 30.0 = "You're fat! Lose some weight, fatty!"
     | otherwise   = "You're a whale, congratulations!"
     where bmi = weight / height ^ 2
-~~~~
+```
 
 We put the keyword `where` after the guards (usually it's best to indent
 it as much as the pipes are indented) and then we define several names
@@ -454,7 +454,7 @@ programs faster since stuff like our `bmi` variable here is calculated
 only once. We could go a bit overboard and present our function like
 this:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 bmiTell :: (RealFloat a) => a -> a -> String
 bmiTell weight height
     | bmi <= skinny = "You're underweight, you emo, you!"
@@ -465,7 +465,7 @@ bmiTell weight height
           skinny = 18.5
           normal = 25.0
           fat = 30.0
-~~~~
+```
 
 The names we define in the where section of a function are only visible
 to that function, so we don't have to worry about them polluting the
@@ -481,21 +481,21 @@ shared name, you have to define it globally.
 You can also use where bindings to *pattern match*! We could have
 rewritten the where section of our previous function as:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
     ...
     where bmi = weight / height ^ 2
           (skinny, normal, fat) = (18.5, 25.0, 30.0)
-~~~~
+```
 
 Let's make another fairly trivial function where we get a first and a
 last name and give someone back their initials.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 initials :: String -> String -> String
 initials firstname lastname = [f] ++ ". " ++ [l] ++ "."
     where (f:_) = firstname
           (l:_) = lastname
-~~~~
+```
 
 We could have done this pattern matching directly in the function's
 parameters (it would have been shorter and clearer actually) but this
@@ -506,11 +506,11 @@ functions. Staying true to our healthy programming theme, let's make a
 function that takes a list of weight-height pairs and returns a list of
 BMIs.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 calcBmis :: (RealFloat a) => [(a, a)] -> [a]
 calcBmis xs = [bmi w h | (w, h) <- xs]
     where bmi weight height = weight / height ^ 2
-~~~~
+```
 
 And that's all there is to it! The reason we had to introduce `bmi` as a
 function in this example is because we can't just calculate one BMI from
@@ -537,13 +537,13 @@ bindings can be used for pattern matching. Let's see them in action!
 This is how we could define a function that gives us a cylinder's
 surface area based on its height and radius:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 cylinder :: (RealFloat a) => a -> a -> a
 cylinder r h =
     let sideArea = 2 * pi * r * h
         topArea = pi * r ^2
     in  sideArea + 2 * topArea
-~~~~
+```
 
 ![let it be](img/letitbe.png)
 
@@ -560,54 +560,54 @@ The difference is that *let* bindings are expressions themselves.
 if statement and it was explained that an if else statement is an
 expression and you can cram it in almost anywhere?
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> [if 5 > 3 then "Woo" else "Boo", if 'a' > 'b' then "Foo" else "Bar"]
 ["Woo", "Bar"]
 ghci> 4 * (if 10 > 5 then 10 else 0) + 2
 42
-~~~~
+```
 
 You can also do that with let bindings.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> 4 * (let a = 9 in a + 1) + 2
 42
-~~~~
+```
 
 They can also be used to introduce functions in a local scope:
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> [let square x = x * x in (square 5, square 3, square 2)]
 [(25,9,4)]
-~~~~
+```
 
 If we want to bind to several variables inline, we obviously can't align
 them at columns. That's why we can separate them with semicolons.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> (let a = 100; b = 200; c = 300 in a*b*c, let foo="Hey "; bar = "there!" in foo ++ bar)
 (6000000,"Hey there!")
-~~~~
+```
 
 You don't have to put a semicolon after the last binding but you can if
 you want. Like we said before, you can pattern match with *let*
 bindings. They're very useful for quickly dismantling a tuple into
 components and binding them to names and such.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> (let (a,b,c) = (1,2,3) in a+b+c) * 100
 600
-~~~~
+```
 
 You can also put *let* bindings inside list comprehensions. Let's
 rewrite our previous example of calculating lists of weight-height pairs
 to use a *let* inside a list comprehension instead of defining an
 auxiliary function with a *where*.
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 calcBmis :: (RealFloat a) => [(a, a)] -> [a]
 calcBmis xs = [bmi | (w, h) <- xs, let bmi = w / h ^ 2]
-~~~~
+```
 
 We include a *let* inside a list comprehension much like we would a
 predicate, only it doesn't filter the list, it only binds to names. The
@@ -616,10 +616,10 @@ output function (the part before the |) and all predicates and sections
 that come after of the binding. So we could make our function return
 only the BMIs of fat people:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 calcBmis :: (RealFloat a) => [(a, a)] -> [a]
 calcBmis xs = [bmi | (w, h) <- xs, let bmi = w / h ^ 2, bmi >= 25.0]
-~~~~
+```
 
 We can't use the `bmi` name in the `(w, h) <- xs` part because it's defined
 prior to the *let* binding.
@@ -632,7 +632,7 @@ also be omitted when defining functions and constants directly in GHCi.
 If we do that, then the names will be visible throughout the entire
 interactive session.
 
-~~~~ {.haskell:ghci name="code"}
+```haskell
 ghci> let zoot x y z = x * y + z
 ghci> zoot 3 9 2
 29
@@ -640,7 +640,7 @@ ghci> let boot x y z = x * y + z in boot 3 4 2
 14
 ghci> boot
 <interactive>:1:0: Not in scope: `boot'
-~~~~
+```
 
 If *let* bindings are so cool, why not use them all the time instead of
 *where* bindings, you ask? Well, since *let* bindings are expressions
@@ -671,26 +671,26 @@ yeah, pattern matching on parameters in function definitions! Well,
 that's actually just syntactic sugar for case expressions. These two
 pieces of code do the same thing and are interchangeable:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 head' :: [a] -> a
 head' [] = error "No head for empty lists!"
 head' (x:_) = x
-~~~~
+```
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 head' :: [a] -> a
 head' xs = case xs of [] -> error "No head for empty lists!"
                       (x:_) -> x
-~~~~
+```
 
 As you can see, the syntax for case expressions is pretty simple:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 case expression of pattern -> result
                    pattern -> result
                    pattern -> result
                    ...
-~~~~
+```
 
 `expression` is matched against the patterns. The pattern matching action
 is the same as expected: the first pattern that matches the expression
@@ -701,22 +701,22 @@ Whereas pattern matching on function parameters can only be done when
 defining functions, case expressions can be used pretty much anywhere.
 For instance:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 describeList :: [a] -> String
 describeList xs = "The list is " ++ case xs of [] -> "empty."
                                                [x] -> "a singleton list."
                                                xs -> "a longer list."
-~~~~
+```
 
 They are useful for pattern matching against something in the middle of
 an expression. Because pattern matching in function definitions is
 syntactic sugar for case expressions, we could have also defined this
 like so:
 
-~~~~ {.haskell:hs name="code"}
+```haskell
 describeList :: [a] -> String
 describeList xs = "The list is " ++ what xs
     where what [] = "empty."
           what [x] = "a singleton list."
           what xs = "a longer list."
-~~~~
+```
